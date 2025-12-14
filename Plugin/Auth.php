@@ -24,34 +24,27 @@ use MageOS\AdminActivityLog\Helper\Data as Helper;
  */
 class Auth
 {
-    /**
-     * Auth constructor.
-     * @param Helper $helper
-     * @param LoginRepositoryInterface $loginRepository
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Helper $helper,
-        protected readonly LoginRepositoryInterface $loginRepository,
-        protected readonly Benchmark $benchmark
+        private readonly Helper $helper,
+        private readonly LoginRepositoryInterface $loginRepository,
+        private readonly Benchmark $benchmark
     ) {
     }
 
     /**
      * Track admin logout activity
-     * @param \Magento\Backend\Model\Auth $auth
-     * @param callable $proceed
-     * @return mixed
      */
-    public function aroundLogout(\Magento\Backend\Model\Auth $auth, callable $proceed)
+    public function aroundLogout(\Magento\Backend\Model\Auth $auth, callable $proceed): void
     {
         $this->benchmark->start(__METHOD__);
+
         if ($this->helper->isLoginEnable()) {
             $user = $auth->getAuthStorage()->getUser();
             $this->loginRepository->setUser($user)->addLogoutLog();
         }
-        $result = $proceed();
+
+        $proceed();
+
         $this->benchmark->end(__METHOD__);
-        return $result;
     }
 }
