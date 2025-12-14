@@ -14,11 +14,13 @@
 
 namespace MageOS\AdminActivityLog\Model\Activity;
 
+use Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory as ConfigCollectionFactory;
+use Magento\Config\Model\ResourceModel\Config\Data\Collection as ConfigCollection;
 use Magento\Framework\App\Config\Storage\WriterInterface;
-use Magento\Framework\App\Config\ValueFactory;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
+use MageOS\AdminActivityLog\Model\ResourceModel\ActivityLog\Collection;
 
 /**
  * Class ThemeConfig
@@ -26,16 +28,9 @@ use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
  */
 class ThemeConfig implements ModelInterface
 {
-    /**
-     * ThemeConfig constructor.
-     * @param DataObject $dataObject
-     * @param ValueFactory $valueFactory
-     * @param RequestInterface $request
-     * @param WriterInterface $configWriter
-     */
     public function __construct(
         protected readonly DataObject $dataObject,
-        protected readonly ValueFactory $valueFactory,
+        protected readonly ConfigCollectionFactory $configCollectionFactory,
         protected readonly RequestInterface $request,
         protected readonly WriterInterface $configWriter
     ) {
@@ -43,8 +38,6 @@ class ThemeConfig implements ModelInterface
 
     /**
      * Get config path of theme configuration
-     * @param DataObject $model
-     * @return string
      */
     public function getPath(DataObject $model): string
     {
@@ -61,30 +54,33 @@ class ThemeConfig implements ModelInterface
 
     /**
      * Get old activity data of theme configuration
-     * @param DataObject $model
-     * @return mixed
+     * @return array<string, string>
      */
-    public function getOldData(DataObject $model)
+    public function getOldData(DataObject $model): array
     {
         $path = $this->getPath($model);
-        $systemData = $this->valueFactory->create()->getCollection()
-            ->addFieldToFilter('path', ['like' => $path . '/%']);
+        /** @var ConfigCollection $systemDataCollection */
+        $systemDataCollection = $this->configCollectionFactory->create();
+        $systemDataCollection->addFieldToFilter('path', ['like' => $path . '/%']);
 
         $data = [];
-        foreach ($systemData->getData() as $config) {
+        foreach ($systemDataCollection->getData() as $config) {
             $path = str_replace('design_', '', str_replace('/', '_', $config['path']));
             $data[$path] = $config['value'];
         }
+
         return $data;
     }
 
     /**
      * Get edit activity data of theme configuration
-     * @param DataObject $model
-     * @param array $fieldArray
-     * @return mixed
+     * @param array<string, string> $fieldArray
+     * @return array{}|array<string, array{
+     *      old_value: string,
+     *      new_value: string
+     *  }>
      */
-    public function getEditData(DataObject $model, $fieldArray)
+    public function getEditData(DataObject $model, array $fieldArray): array
     {
         $path = 'stores/scope_id/' . $model->getScopeId();
         $oldData = $this->getOldData($model);
@@ -97,34 +93,31 @@ class ThemeConfig implements ModelInterface
 
     /**
      * Get revert activity data of theme configuration
-     * @param $logData
-     * @param $scopeId
-     * @param $scope
-     * @return bool
      */
-    public function revertData($logData, $scopeId, $scope)
+    public function revertData(Collection $logData, int|string $scopeId, string $scope): bool
     {
-        if (!empty($logData)) {
-            foreach ($logData as $log) {
-                $this->configWriter->save(
-                    $log->getFieldName(),
-                    $log->getOldValue(),
-                    $scope,
-                    $scopeId
-                );
-            }
+        foreach ($logData as $log) {
+            $this->configWriter->save(
+                $log->getFieldName(),
+                $log->getOldValue(),
+                $scope,
+                $scopeId
+            );
         }
         return true;
     }
 
     /**
      * Set additional data
-     * @param $oldData
-     * @param $newData
-     * @param $fieldArray
-     * @return array
+     * @param array<string, string> $oldData
+     * @param array<string, string> $newData
+     * @param array<string, string> $fieldArray
+     * @return array{}|array<string, array{
+     *     old_value: string,
+     *     new_value: string
+     * }>
      */
-    public function collectAdditionalData($oldData, $newData, $fieldArray): array
+    public function collectAdditionalData(array $oldData, array $newData, array $fieldArray): array
     {
         $logData = [];
         foreach ($newData as $key => $value) {
@@ -135,7 +128,7 @@ class ThemeConfig implements ModelInterface
             $oldValue = !empty($oldData[$key]) ? $oldData[$key] : '';
 
             if ($newValue != $oldValue) {
-                $key = 'design/' . preg_replace('/_/', '/', $key, 1);
+                $key = 'design/' . preg_replace('/_/', '/', (string) $key, 1);
                 $logData[$key] = [
                     'old_value' => $oldValue,
                     'new_value' => $newValue
