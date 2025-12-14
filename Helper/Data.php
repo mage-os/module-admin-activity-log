@@ -102,7 +102,7 @@ class Data extends AbstractHelper
      * @param $path
      * @return mixed|false
      */
-    public function getConfigValue($path)
+    public function getConfigValue(string $path)
     {
         $moduleValue = $this->scopeConfig->getValue(
             constant(
@@ -131,7 +131,7 @@ class Data extends AbstractHelper
      * Get all actions
      * @return array
      */
-    public function getAllActions()
+    public function getAllActions(): array
     {
         return $this->config->getActions();
     }
@@ -140,7 +140,7 @@ class Data extends AbstractHelper
      * Get activity module name
      * @return string
      */
-    public function getActivityModuleName($module)
+    public function getActivityModuleName(string $module)
     {
         return $this->config->getActivityModuleName($module);
     }
@@ -152,7 +152,7 @@ class Data extends AbstractHelper
      */
     public static function isWildCardModel($model): bool
     {
-        $model = is_string($model) ? $model : get_class($model);
+        $model = is_string($model) ? $model : $model::class;
         return in_array($model, self::$wildcardModels, true);
     }
 }
