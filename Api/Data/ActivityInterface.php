@@ -32,6 +32,7 @@ interface ActivityInterface
     public const MODULE         = 'module';
     public const FULLACTION     = 'fullaction';
     public const ITEM_NAME      = 'item_name';
+    public const ITEM_PATH      = 'item_path';
     public const ITEM_URL       = 'item_url';
     public const IS_REVERTABLE  = 'is_revertable';
     public const REVERT_BY      = 'revert_by';
@@ -73,6 +74,8 @@ interface ActivityInterface
 
     public function getItemName(): string;
     public function setItemName(string $itemName): self;
+    public function getItemPath(): string;
+    public function setItemPath(string $itemPath): self;
 
     public function getItemUrl(): ?string;
     public function setItemUrl(?string $itemUrl): self;
