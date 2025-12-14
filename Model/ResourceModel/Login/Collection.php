@@ -23,10 +23,6 @@ use MageOS\AdminActivityLog\Model\ResourceModel\Login;
  */
 class Collection extends AbstractCollection
 {
-    /**
-     * Define resource model
-     * @return void
-     */
     public function _construct(): void
     {
         $this->_init(

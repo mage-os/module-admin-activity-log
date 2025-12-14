@@ -22,10 +22,6 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
  */
 class Login extends AbstractDb
 {
-    /**
-     * Initialize resource model
-     * @return void
-     */
     public function _construct(): void
     {
         $this->_init('admin_login_log', 'entity_id');
