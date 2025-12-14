@@ -17,6 +17,7 @@
         <column xsi:type="varchar" name="fullaction" nullable="false" length="200" default="" comment="Full Action Name"/>
         <column xsi:type="varchar" name="item_name" nullable="false" length="255" default="" comment="Name of item which is affected like product, user, order, etc"/>
         <column xsi:type="varchar" name="item_url" nullable="true" length="255" default="" comment="Url of item if possible"/>
+        <column xsi:type="varchar" name="item_path" nullable="true" length="255" default="" comment="Path of item if possible"/>
         <column xsi:type="tinyint" name="is_revertable" nullable="true" default="0" comment="0 = Not able revert activity, 1= Able to revert activity"/>
         <column xsi:type="varchar" name="revert_by" nullable="true" length="64" default="" comment="Name of admin user who reverted the activity"/>
         <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="The date when the activity was created"/>

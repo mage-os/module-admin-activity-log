@@ -15,6 +15,7 @@
             "fullaction": true,
             "item_name": true,
             "item_url": true,
+            "item_path": true,
             "is_revertable": true,
             "revert_by": true,
             "created_at": true,
