@@ -27,30 +27,20 @@ use MageOS\AdminActivityLog\Block\Adminhtml\ActivityLogListing;
  */
 class Log extends Action
 {
-    /**
-     * Log constructor.
-     * @param Context $context
-     * @param RawFactory $resultRawFactory
-     * @param LayoutFactory $layoutFactory
-     */
     public function __construct(
         Context $context,
-        protected readonly RawFactory $resultRawFactory,
-        protected readonly LayoutFactory $layoutFactory
+        private readonly RawFactory $resultRawFactory,
+        private readonly LayoutFactory $layoutFactory
     ) {
         parent::__construct($context);
     }
 
     /**
-     * view action
      * @return Raw
      */
     public function execute()
     {
-        $content = $this->layoutFactory->create()
-            ->createBlock(
-                ActivityLogListing::class
-            );
+        $content = $this->layoutFactory->create()->createBlock(ActivityLogListing::class);
 
         /** @var Raw $resultRaw */
         $resultRaw = $this->resultRawFactory->create();

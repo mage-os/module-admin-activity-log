@@ -26,22 +26,15 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class Revert extends Action
 {
-    /**
-     * Revert constructor.
-     * @param Context $context
-     * @param JsonFactory $resultJsonFactory
-     * @param Processor $processor
-     */
     public function __construct(
         Context $context,
-        protected readonly JsonFactory $resultJsonFactory,
-        protected readonly Processor $processor
+        private readonly JsonFactory $resultJsonFactory,
+        private readonly Processor $processor
     ) {
         parent::__construct($context);
     }
 
     /**
-     * Revert action
      * @return Json
      */
     public function execute()

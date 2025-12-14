@@ -25,25 +25,16 @@ use Magento\Framework\View\Result\PageFactory;
  */
 class Index extends Action
 {
-    /**
-     * @var string
-     */
-    public const ADMIN_RESOURCE = 'MageOS_AdminActivityLog::activity';
+    public const string ADMIN_RESOURCE = 'MageOS_AdminActivityLog::activity';
 
-    /**
-     * Index constructor.
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
-     */
     public function __construct(
         Context $context,
-        protected readonly PageFactory $resultPageFactory
+        private readonly PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
     }
 
     /**
-     * Index action
      * @return Page
      */
     public function execute()
