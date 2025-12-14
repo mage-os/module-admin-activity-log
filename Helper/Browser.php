@@ -1252,19 +1252,19 @@ class Browser extends AbstractHelper implements \Stringable
     protected function checkBrowserNetscapeNavigator9Plus(): bool
     {
         if (stripos($this->agent, 'Firefox') !== false && preg_match(
-                '/Navigator\/([^ ]*)/i',
-                $this->agent,
-                $matches
-            )) {
+            '/Navigator\/([^ ]*)/i',
+            $this->agent,
+            $matches
+        )) {
             $this->setVersion($matches[1]);
             $this->setBrowser(self::BROWSER_NETSCAPE_NAVIGATOR);
             return true;
         } else {
             if (stripos($this->agent, 'Firefox') === false && preg_match(
-                    '/Netscape6?\/([^ ]*)/i',
-                    $this->agent,
-                    $matches
-                )) {
+                '/Netscape6?\/([^ ]*)/i',
+                $this->agent,
+                $matches
+            )) {
                 $this->setVersion($matches[1]);
                 $this->setBrowser(self::BROWSER_NETSCAPE_NAVIGATOR);
                 return true;
@@ -1280,10 +1280,10 @@ class Browser extends AbstractHelper implements \Stringable
     protected function checkBrowserShiretoko(): bool
     {
         if (stripos($this->agent, 'Mozilla') !== false && preg_match(
-                '/Shiretoko\/([^ ]*)/i',
-                $this->agent,
-                $matches
-            )) {
+            '/Shiretoko\/([^ ]*)/i',
+            $this->agent,
+            $matches
+        )) {
             $this->setVersion($matches[1]);
             $this->setBrowser(self::BROWSER_SHIRETOKO);
             return true;
@@ -1379,9 +1379,9 @@ class Browser extends AbstractHelper implements \Stringable
     protected function checkBrowserMozilla(): bool
     {
         if (stripos($this->agent, 'mozilla') !== false && preg_match(
-                '/rv:[0-9].[0-9][a-b]?/i',
-                $this->agent
-            ) && stripos($this->agent, 'netscape') === false) {
+            '/rv:[0-9].[0-9][a-b]?/i',
+            $this->agent
+        ) && stripos($this->agent, 'netscape') === false) {
             $aversion = explode(' ', stristr($this->agent, 'rv:'));
             preg_match('/rv:[0-9].[0-9][a-b]?/i', $this->agent, $aversion);
             $this->setVersion(str_replace('rv:', '', $aversion[0]));
@@ -1389,19 +1389,19 @@ class Browser extends AbstractHelper implements \Stringable
             return true;
         } else {
             if (stripos($this->agent, 'mozilla') !== false && preg_match(
-                    '/rv:[0-9]\.[0-9]/i',
-                    $this->agent
-                ) && stripos($this->agent, 'netscape') === false) {
+                '/rv:[0-9]\.[0-9]/i',
+                $this->agent
+            ) && stripos($this->agent, 'netscape') === false) {
                 $aversion = explode('', stristr($this->agent, 'rv:'));
                 $this->setVersion(str_replace('rv:', '', $aversion[0]));
                 $this->setBrowser(self::BROWSER_MOZILLA);
                 return true;
             } else {
                 if (stripos($this->agent, 'mozilla') !== false && preg_match(
-                        '/mozilla\/([^ ]*)/i',
-                        $this->agent,
-                        $matches
-                    ) && stripos($this->agent, 'netscape') === false) {
+                    '/mozilla\/([^ ]*)/i',
+                    $this->agent,
+                    $matches
+                ) && stripos($this->agent, 'netscape') === false) {
                     $this->setVersion($matches[1]);
                     $this->setBrowser(self::BROWSER_MOZILLA);
                     return true;
@@ -1776,9 +1776,9 @@ class Browser extends AbstractHelper implements \Stringable
                     } elseif (stripos($this->agent, 'Silk') !== false) {
                         $this->platform = self::PLATFORM_FIRE_OS;
                     } elseif (stripos($this->agent, 'linux') !== false && stripos(
-                            $this->agent,
-                            'SMART-TV'
-                        ) !== false) {
+                        $this->agent,
+                        'SMART-TV'
+                    ) !== false) {
                         $this->platform = self::PLATFORM_LINUX . '/' . self::PLATFORM_SMART_TV;
                     } elseif (stripos($this->agent, 'linux') !== false) {
                         $this->platform = self::PLATFORM_LINUX;

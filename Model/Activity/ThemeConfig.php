@@ -14,8 +14,8 @@
 
 namespace MageOS\AdminActivityLog\Model\Activity;
 
-use Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory as ConfigCollectionFactory;
 use Magento\Config\Model\ResourceModel\Config\Data\Collection as ConfigCollection;
+use Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory as ConfigCollectionFactory;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DataObject;

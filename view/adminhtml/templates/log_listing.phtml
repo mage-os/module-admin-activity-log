@@ -37,7 +37,7 @@ $adminDetails = $block->getAdminDetails();
                                 echo $escaper->escapeHtml(" (" . ucwords(strtolower($adminDetails['name'])) . ") ");
                             }
                         }
-                        ?></td>
+?></td>
                 </tr>
                 <tr style="height: 35px;text-indent: 10px;">
                     <td style="font-size: 16px;font-weight: 600;">Module</td>
@@ -53,9 +53,9 @@ $adminDetails = $block->getAdminDetails();
                     <td style="font-size: 16px;font-weight: 600;">User Agent</td>
                     <td width="1%" style="font-size: 16px;font-weight: 600;">:</td>
                     <td style="text-indent: 0;padding-left: 10px;"><?= $escaper->escapeHtml(
-                            $adminDetails['browser'],
-                            ['strong', 'br']
-                        ) ?></td>
+                        $adminDetails['browser'],
+                        ['strong', 'br']
+                    ) ?></td>
                 </tr>
                 <tr style="height: 35px;text-indent: 10px;">
                     <td style="font-size: 16px;font-weight: 600;">Date</td>
@@ -86,15 +86,15 @@ $adminDetails = $block->getAdminDetails();
                             </td>
                             <td>
                                 <textarea class="value-container" readonly><?php
-                                    if (!$block->getActivityRepository()->isFieldProtected($item['field_name'])):
-                                        echo $escaper->escapeHtml($item['old_value']);
-                                    endif ?></textarea>
+                                if (!$block->getActivityRepository()->isFieldProtected($item['field_name'])):
+                                    echo $escaper->escapeHtml($item['old_value']);
+                                endif ?></textarea>
                             </td>
                             <td>
                                 <textarea class="value-container" readonly><?php
-                                    if (!$block->getActivityRepository()->isFieldProtected($item['field_name'])):
-                                        echo $escaper->escapeHtml($item['new_value']);
-                                    endif ?></textarea>
+                                if (!$block->getActivityRepository()->isFieldProtected($item['field_name'])):
+                                    echo $escaper->escapeHtml($item['new_value']);
+                                endif ?></textarea>
                             </td>
                         </tr>
                     <?php
