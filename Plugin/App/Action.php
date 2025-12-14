@@ -14,7 +14,7 @@
 
 namespace MageOS\AdminActivityLog\Plugin\App;
 
-use Magento\Framework\App\ActionInterface;
+use Magento\Framework\App\Action\AbstractAction;
 use MageOS\AdminActivityLog\Helper\Benchmark;
 use MageOS\AdminActivityLog\Model\Processor;
 
@@ -24,31 +24,24 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class Action
 {
-    /**
-     * Action constructor.
-     * @param Processor $processor
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Processor $processor,
-        protected readonly Benchmark $benchmark
+        private readonly Processor $processor,
+        private readonly Benchmark $benchmark
     ) {
     }
 
     /**
      * Get before dispatch data
-     *
-     * @param ActionInterface $controller
-     * @return void
      */
-    public function beforeDispatch(ActionInterface $controller): void
-    {
+    public function beforeDispatch(
+        AbstractAction $subject
+    ): void {
         $this->benchmark->start(__METHOD__);
-        $actionName = $controller->getRequest()->getActionName();
-        $fullActionName = $controller->getRequest()->getFullActionName();
+        $actionName = $subject->getRequest()->getActionName();
+        $fullActionName = $subject->getRequest()->getFullActionName();
 
         $this->processor->init($fullActionName, $actionName);
-        $this->processor->addPageVisitLog($controller->getRequest()->getModuleName());
+        $this->processor->addPageVisitLog($subject->getRequest()->getModuleName());
         $this->benchmark->end(__METHOD__);
     }
 }
