@@ -17,6 +17,7 @@ namespace MageOS\AdminActivityLog\Block\Adminhtml;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Directory\Helper\Data as DirectoryHelper;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Json\Helper\Data as JsonHelper;
 use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
 use MageOS\AdminActivityLog\Helper\Browser;
@@ -66,6 +67,7 @@ class ActivityLogListing extends Template
 
     /**
      * @return array<string, string>
+     * @throws NoSuchEntityException
      */
     public function getAdminDetails(): array
     {
@@ -76,12 +78,21 @@ class ActivityLogListing extends Template
         $this->browser->setUserAgent($activity->getUserAgent());
         $browser = $this->browser->__toString();
 
+        $store = $this->_storeManager->getStore($activity->getStoreId());
+        if ($store->getId() == 0) {
+            $storeViewName = 'Default Config';
+        } else {
+            $storeViewName = sprintf('%s > %s > %s', $store->getWebsite()->getName(), $store->getGroup()->getName(), $store->getName());
+        }
+
         return [
             'username' => $activity->getUsername(),
             'module' => $activity->getModule(),
             'name' => $activity->getName(),
             'fullaction' => $activity->getFullaction(),
             'path' => $activity->getItemPath(),
+            'scope' => $activity->getScope(),
+            'store_name' => $storeViewName,
             'browser' => $browser,
             'date' => $activity->getUpdatedAt()
         ];

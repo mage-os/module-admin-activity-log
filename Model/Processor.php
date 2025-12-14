@@ -331,6 +331,7 @@ class Processor
      */
     public function initLog()
     {
+        /** @var Activity $activity */
         $activity = $this->activityFactory->create();
 
         if ($this->authSession->isLoggedIn()) {
