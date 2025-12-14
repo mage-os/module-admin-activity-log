@@ -414,7 +414,12 @@ class Processor
             return $model->getScopeId();
         }
         if (isset($data['store_id'])) {
-            return $model->getStoreId();
+            $storeId = $model->getStoreId();
+            if (is_array($storeId)) {
+                $storeId = reset($storeId);
+            }
+
+            return (int)$storeId;
         }
         return $this->storeManager->getStore()->getId();
     }
