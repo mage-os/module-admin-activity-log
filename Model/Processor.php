@@ -25,6 +25,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
 use MageOS\AdminActivityLog\Helper\Data as Helper;
 use MageOS\AdminActivityLog\Model\Activity\Status;
+use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
 use MageOS\AdminActivityLog\Model\Handler\PostDispatch;
 
 /**
@@ -117,7 +118,8 @@ class Processor
         protected readonly RequestInterface $request,
         protected readonly Http $httpRequest,
         protected readonly Status $status,
-        protected readonly PostDispatch $postDispatch
+        protected readonly PostDispatch $postDispatch,
+        private readonly SystemConfig $systemConfig
     ) {
     }
 
@@ -190,6 +192,10 @@ class Processor
                 || !empty($model->getParentId()))) {
             $id = ($model->getOrderId()) ? $model->getOrderId() : $model->getParentId();
         }
+        if ($this->eventConfig['module'] === 'system_configuration') {
+            $id = $model->getData('field_config')['path'];
+        }
+
         return str_replace(
             $this->urlParams,
             [
@@ -359,11 +365,22 @@ class Processor
         $activity = $this->initLog();
 
         $activity->setStoreId($this->getStoreId($model));
-        $activity->setItemName(
-            $model->getData(
-                $this->config->getActivityModuleItemField($this->eventConfig['module'])
-            )
+
+        $itemName = $model->getData(
+            $this->config->getActivityModuleItemField($this->eventConfig['module'])
         );
+
+        $itemPath = '';
+        if ($this->eventConfig['module'] === 'system_configuration') {
+            if (isset($itemName['label'])) {
+                $itemName = $itemName['label'];
+            }
+
+            $itemPath = $this->systemConfig->getHumanReadablePath($model->getPath());
+        }
+
+        $activity->setItemName($itemName);
+        $activity->setItemPath($itemPath);
         $activity->setItemUrl($this->getEditUrl($model));
 
         return $activity;

@@ -14,6 +14,9 @@
 
 namespace MageOS\AdminActivityLog\Model\Activity;
 
+use Magento\Config\Model\Config\Structure;
+use Magento\Config\Model\Config\Structure\Element\Group;
+use Magento\Config\Model\Config\Structure\Element\Section;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\Config\ValueFactory;
@@ -26,16 +29,11 @@ use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
  */
 class SystemConfig implements ModelInterface
 {
-    /**
-     * SystemConfig constructor.
-     * @param DataObject $dataObject
-     * @param ValueFactory $valueFactory
-     * @param WriterInterface $configWriter
-     */
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ValueFactory $valueFactory,
-        protected readonly WriterInterface $configWriter
+        protected readonly WriterInterface $configWriter,
+        private readonly Structure $configStructure
     ) {
     }
 
@@ -56,6 +54,46 @@ class SystemConfig implements ModelInterface
         }
 
         return '';
+    }
+
+    public function getHumanReadablePath(string $path): string
+    {
+        $labels = [__('System Configuration')];
+        [$sectionId, $groupId, $fieldId] = explode('/', $path);
+
+        $section = $this->configStructure->getElement($sectionId);
+        if (!$section instanceof Section) {
+            return $path;
+        }
+
+        $tabId = $section->getAttribute('tab');
+        if ($tabId) {
+            foreach ($this->configStructure->getTabs() as $tab) {
+                if ($tab->getId() !== $tabId) {
+                    continue;
+                }
+
+                $labels[] = $tab->getLabel();
+            }
+        }
+
+        $labels[] = $section->getLabel();
+        foreach ($section->getChildren() as $group) {
+            if (!$group instanceof Group || $group->getId() !== $groupId) {
+                continue;
+            }
+
+            $labels[] = $group->getLabel();
+            foreach ($group->getChildren() as $field) {
+                if ($field->getId() !== $fieldId) {
+                    continue;
+                }
+
+                $labels[] = $field->getLabel();
+            }
+        }
+
+        return implode(' > ', $labels);
     }
 
     /**

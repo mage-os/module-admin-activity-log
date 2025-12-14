@@ -315,7 +315,7 @@
                 <trackfield method="getSystemConfigFieldData" />
                 <configpath constant="MODULE_SYSTEM_CONFIG" />
                 <editurl url="admin/system_config/edit/section/{{id}}" />
-                <itemfield field="config" />
+                <itemfield field="field_config" />
             </config>
         </module>
         <module name="system_store">
