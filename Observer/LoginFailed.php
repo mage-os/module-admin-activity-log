@@ -27,41 +27,30 @@ use MageOS\AdminActivityLog\Helper\Data as Helper;
  */
 class LoginFailed implements ObserverInterface
 {
-    /**
-     * LoginFailed constructor.
-     * @param Helper $helper
-     * @param User $user
-     * @param LoginRepositoryInterface $loginRepository
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Helper $helper,
-        protected readonly User $user,
-        protected readonly LoginRepositoryInterface $loginRepository,
-        protected readonly Benchmark $benchmark
+        private readonly Helper $helper,
+        private readonly User $user,
+        private readonly LoginRepositoryInterface $loginRepository,
+        private readonly Benchmark $benchmark
     ) {
     }
 
-    /**
-     * Login failed
-     * @param Observer $observer
-     * @return void
-     */
     public function execute(Observer $observer): void
     {
-        $this->benchmark->start(__METHOD__);
         if (!$this->helper->isLoginEnable()) {
             return;
         }
+
+        $this->benchmark->start(__METHOD__);
 
         $user = null;
         if ($observer->getUserName()) {
             $user = $this->user->loadByUsername($observer->getUserName());
         }
 
-        $this->loginRepository
-            ->setUser($user)
+        $this->loginRepository->setUser($user)
             ->addFailedLog($observer->getException()->getMessage());
+
         $this->benchmark->end(__METHOD__);
     }
 }

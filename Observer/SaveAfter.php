@@ -26,13 +26,13 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class SaveAfter implements ObserverInterface
 {
-    public const ACTION_MASSCANCEL = 'massCancel';
-    public const SYSTEM_CONFIG = 'adminhtml_system_config_save';
+    public const string ACTION_MASSCANCEL = 'massCancel';
+    public const string SYSTEM_CONFIG = 'adminhtml_system_config_save';
 
     public function __construct(
-        protected readonly Processor $processor,
-        protected readonly Helper $helper,
-        protected readonly Benchmark $benchmark
+        private readonly Processor $processor,
+        private readonly Helper $helper,
+        private readonly Benchmark $benchmark
     ) {
     }
 

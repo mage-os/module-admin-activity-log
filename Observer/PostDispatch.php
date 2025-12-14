@@ -26,16 +26,10 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class PostDispatch implements ObserverInterface
 {
-    /**
-     * PostDispatch constructor.
-     * @param Processor $processor
-     * @param Helper $helper
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Processor $processor,
-        protected readonly Helper $helper,
-        protected readonly Benchmark $benchmark
+        private readonly Processor $processor,
+        private readonly Helper $helper,
+        private readonly Benchmark $benchmark
     ) {
     }
 

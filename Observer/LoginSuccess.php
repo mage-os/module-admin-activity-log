@@ -26,34 +26,21 @@ use MageOS\AdminActivityLog\Helper\Data as Helper;
  */
 class LoginSuccess implements ObserverInterface
 {
-    /**
-     * LoginSuccess constructor.
-     * @param Helper $helper
-     * @param LoginRepositoryInterface $loginRepository
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Helper $helper,
-        protected readonly LoginRepositoryInterface $loginRepository,
-        protected readonly Benchmark $benchmark
+        private readonly Helper $helper,
+        private readonly LoginRepositoryInterface $loginRepository,
+        private readonly Benchmark $benchmark
     ) {
     }
 
-    /**
-     * Login success
-     * @param Observer $observer
-     * @return void
-     */
     public function execute(Observer $observer): void
     {
-        $this->benchmark->start(__METHOD__);
         if (!$this->helper->isLoginEnable()) {
             return;
         }
 
-        $this->loginRepository
-            ->setUser($observer->getUser())
-            ->addSuccessLog();
+        $this->benchmark->start(__METHOD__);
+        $this->loginRepository->setUser($observer->getUser())->addSuccessLog();
         $this->benchmark->end(__METHOD__);
     }
 }

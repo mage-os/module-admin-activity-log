@@ -28,10 +28,10 @@ use MageOS\AdminActivityLog\Model\Processor;
 class SaveBefore implements ObserverInterface
 {
     public function __construct(
-        protected readonly Helper $helper,
-        protected readonly Processor $processor,
-        protected readonly ActivityRepositoryInterface $activityRepository,
-        protected readonly Benchmark $benchmark
+        private readonly Helper $helper,
+        private readonly Processor $processor,
+        private readonly ActivityRepositoryInterface $activityRepository,
+        private readonly Benchmark $benchmark
     ) {
     }
 

@@ -26,39 +26,29 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class DeleteAfter implements ObserverInterface
 {
-    public const SYSTEM_CONFIG = 'adminhtml_system_config_save';
+    public const string SYSTEM_CONFIG = 'adminhtml_system_config_save';
 
-    /**
-     * DeleteAfter constructor.
-     * @param Processor $processor
-     * @param Helper $helper
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Processor $processor,
-        protected readonly Helper $helper,
-        protected readonly Benchmark $benchmark
+        private readonly Processor $processor,
+        private readonly Helper $helper,
+        private readonly Benchmark $benchmark
     ) {
     }
 
-    /**
-     * Delete after
-     *
-     * @param Observer $observer
-     * @return void
-     */
     public function execute(Observer $observer): void
     {
-        $this->benchmark->start(__METHOD__);
         if (!$this->helper->isEnable()) {
             return;
         }
+
+        $this->benchmark->start(__METHOD__);
 
         $object = $observer->getEvent()->getObject();
         if ($this->processor->validate($object) && ($this->processor->getInitAction() === self::SYSTEM_CONFIG)) {
             $this->processor->modelEditAfter($object);
         }
         $this->processor->modelDeleteAfter($object);
+
         $this->benchmark->end(__METHOD__);
     }
 }

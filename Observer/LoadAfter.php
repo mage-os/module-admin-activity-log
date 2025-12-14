@@ -26,32 +26,24 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class LoadAfter implements ObserverInterface
 {
-    /**
-     * LoadAfter constructor.
-     * @param Processor $processor
-     * @param Data $helper
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Processor $processor,
-        protected readonly Data $helper,
-        protected readonly Benchmark $benchmark
+        private readonly Processor $processor,
+        private readonly Data $helper,
+        private readonly Benchmark $benchmark
     ) {
     }
 
-    /**
-     * Delete after
-     * @param Observer $observer
-     * @return void
-     */
     public function execute(Observer $observer): void
     {
-        $this->benchmark->start(__METHOD__);
         if (!$this->helper->isEnable()) {
             return;
         }
+
+        $this->benchmark->start(__METHOD__);
+
         $object = $observer->getEvent()->getObject();
         $this->processor->modelLoadAfter($object);
+
         $this->benchmark->end(__METHOD__);
     }
 }
