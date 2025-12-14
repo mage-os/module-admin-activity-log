@@ -28,12 +28,12 @@ use Magento\Ui\Component\Listing\Columns\Column;
  */
 class ItemColumn extends Column
 {
-    public const URL_COUNT = 7;
+    public const int URL_COUNT = 7;
 
     /**
-     * @var array
+     * @var string[]
      */
-    protected $allowedAttributes = [
+    protected array $allowedAttributes = [
         'href',
         'title',
         'id',
@@ -46,13 +46,8 @@ class ItemColumn extends Column
     protected readonly FilterManager $filterManager;
 
     /**
-     * ItemColumn constructor.
-     * @param ContextInterface $context
-     * @param Context $contexts
-     * @param UiComponentFactory $uiComponentFactory
-     * @param UrlInterface $backendUrl
-     * @param array $components
-     * @param array $data
+     * @param array<string, mixed> $components
+     * @param array<string, mixed> $data
      */
     public function __construct(
         ContextInterface $context,
@@ -68,19 +63,16 @@ class ItemColumn extends Column
     }
 
     /**
-     * Escape HTML entities
-     * @param string|array $data
-     * @param array|null $allowedTags
-     * @return string
+     * @param string|array<int|string, string> $data
+     * @param string[]|null $allowedTags
      */
-    public function escapeHtml($data, ?array $allowedTags = null): string
+    public function escapeHtml(array|string $data, ?array $allowedTags = null): string
     {
         return $this->escaper->escapeHtml($data, $allowedTags);
     }
 
     /**
      * Render block HTML
-     * @return string
      */
     public function _toHtml(): string
     {
@@ -94,7 +86,6 @@ class ItemColumn extends Column
 
     /**
      * Prepare link attributes as serialized and formatted string
-     * @return string
      */
     public function getLinkAttributes(): string
     {
@@ -119,7 +110,6 @@ class ItemColumn extends Column
      * @param string $valueSeparator
      * @param string $fieldSeparator
      * @param string $quote
-     * @return  string
      */
     #[\Override]
     public function serialize($keys = [], $valueSeparator = '=', $fieldSeparator = ' ', $quote = '"'): string
@@ -133,8 +123,6 @@ class ItemColumn extends Column
 
     /**
      * Convert action to url
-     * @param string $url
-     * @return string
      */
     public function prepareUrl(string $url): string
     {
@@ -156,8 +144,7 @@ class ItemColumn extends Column
 
     /**
      * Initialize parameter for link
-     * @param array $item
-     * @return void
+     * @param array<string, string> $item
      */
     protected function initLinkParams(array $item): void
     {
@@ -169,8 +156,8 @@ class ItemColumn extends Column
 
     /**
      * Prepare Data Source
-     * @param array $dataSource
-     * @return array
+     * @param array<string, mixed> $dataSource
+     * @return array<string, mixed>
      */
     #[\Override]
     public function prepareDataSource(array $dataSource): array

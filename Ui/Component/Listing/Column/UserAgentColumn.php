@@ -26,12 +26,8 @@ use MageOS\AdminActivityLog\Helper\Browser;
 class UserAgentColumn extends Column
 {
     /**
-     * UserAgentColumn constructor.
-     * @param ContextInterface $context
-     * @param UiComponentFactory $uiComponentFactory
-     * @param Browser $browser
-     * @param array $components
-     * @param array $data
+     * @param array<string, mixed> $components
+     * @param array<string, mixed> $data
      */
     public function __construct(
         ContextInterface $context,
@@ -45,8 +41,7 @@ class UserAgentColumn extends Column
 
     /**
      * Get user agent data
-     * @param array $item
-     * @return string
+     * @param array<string, string> $item
      */
     public function getAgent(array $item): string
     {
@@ -57,8 +52,8 @@ class UserAgentColumn extends Column
 
     /**
      * Prepare Data Source
-     * @param array $dataSource
-     * @return array
+     * @param array<string, mixed> $dataSource
+     * @return array<string, mixed>
      */
     #[\Override]
     public function prepareDataSource(array $dataSource): array

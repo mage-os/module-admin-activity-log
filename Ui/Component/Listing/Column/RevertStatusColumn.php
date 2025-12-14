@@ -24,8 +24,8 @@ class RevertStatusColumn extends Column
 {
     /**
      * Prepare Data Source
-     * @param array $dataSource
-     * @return array
+     * @param array<string, mixed> $dataSource
+     * @return array<string, mixed>
      */
     #[\Override]
     public function prepareDataSource(array $dataSource): array

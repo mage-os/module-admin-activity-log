@@ -26,12 +26,8 @@ use MageOS\AdminActivityLog\Helper\Data as Helper;
 class ActionTypeColumn extends Column
 {
     /**
-     * ActionTypeColumn constructor.
-     * @param ContextInterface $context
-     * @param UiComponentFactory $uiComponentFactory
-     * @param Helper $helper
-     * @param array $components
-     * @param array $data
+     * @param array<string, mixed> $components
+     * @param array<string, mixed> $data
      */
     public function __construct(
         ContextInterface $context,
@@ -44,9 +40,8 @@ class ActionTypeColumn extends Column
     }
 
     /**
-     * Prepare Data Source
-     * @param array $dataSource
-     * @return array
+     * @param array<string, mixed> $dataSource
+     * @return array<string, mixed>
      */
     #[\Override]
     public function prepareDataSource(array $dataSource): array

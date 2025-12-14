@@ -23,12 +23,8 @@ use MageOS\AdminActivityLog\Helper\Data;
  */
 class Options implements ArrayInterface
 {
-    /**
-     * Options constructor.
-     * @param Data $helper
-     */
     public function __construct(
-        protected readonly Data $helper
+        private readonly Data $helper
     ) {
     }
 

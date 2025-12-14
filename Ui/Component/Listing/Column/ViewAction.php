@@ -28,13 +28,8 @@ use Magento\Ui\Component\Listing\Columns\Column;
 class ViewAction extends Column
 {
     /**
-     * ViewAction constructor.
-     * @param ContextInterface $context
-     * @param UiComponentFactory $uiComponentFactory
-     * @param UrlInterface $urlBuilder
-     * @param LayoutInterface $layout
-     * @param array $components
-     * @param array $data
+     * @param array<string, mixed> $components
+     * @param array<string, mixed> $data
      */
     public function __construct(
         ContextInterface $context,
@@ -47,10 +42,6 @@ class ViewAction extends Column
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
-    /**
-     * Get item url
-     * @return string
-     */
     public function getViewUrl(): string
     {
         return $this->urlBuilder->getUrl(
@@ -59,9 +50,8 @@ class ViewAction extends Column
     }
 
     /**
-     * Prepare Data Source
-     * @param array $dataSource
-     * @return array
+     * @param array<string, mixed> $dataSource
+     * @return array<string, mixed>
      */
     #[\Override]
     public function prepareDataSource(array $dataSource): array
