@@ -121,6 +121,7 @@ class ItemColumn extends Column
      * @param string $quote
      * @return  string
      */
+    #[\Override]
     public function serialize($keys = [], $valueSeparator = '=', $fieldSeparator = ' ', $quote = '"'): string
     {
         $data = [];
@@ -171,6 +172,7 @@ class ItemColumn extends Column
      * @param array $dataSource
      * @return array
      */
+    #[\Override]
     public function prepareDataSource(array $dataSource): array
     {
         if (isset($dataSource['data']['items'])) {

@@ -21,7 +21,7 @@ use Magento\Framework\App\Helper\Context;
  * Class Browser
  * @package MageOS\AdminActivityLog\Helper
  */
-class Browser extends AbstractHelper
+class Browser extends AbstractHelper implements \Stringable
 {
     /**
      * @var string
@@ -33,20 +33,14 @@ class Browser extends AbstractHelper
      */
     private $browser_name = '';
 
-    /**
-     * @var string
-     */
-    private $version = '';
+    private ?string $version = '';
 
     /**
      * @var string
      */
     private $platform = '';
 
-    /**
-     * @var string
-     */
-    private $os = '';
+    private string $os = '';
 
     /**
      * @var bool
@@ -73,10 +67,7 @@ class Browser extends AbstractHelper
      */
     private $is_facebook = false;
 
-    /**
-     * @var string
-     */
-    private $aol_version = '';
+    private ?string $aol_version = '';
 
     public const BROWSER_UNKNOWN = 'unknown';
     public const VERSION_UNKNOWN = 'unknown';
@@ -185,7 +176,7 @@ class Browser extends AbstractHelper
      * Reset all properties
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         $this->agent = $_SERVER['HTTP_USER_AGENT'] ?? "";
         $this->browser_name = self::BROWSER_UNKNOWN;
@@ -205,7 +196,7 @@ class Browser extends AbstractHelper
      * @param string $browserName
      * @return bool True if the browser is the specified browser
      */
-    public function isBrowser($browserName)
+    public function isBrowser($browserName): bool
     {
         return strcasecmp($this->browser_name, trim((string)$browserName)) === 0;
     }
@@ -224,7 +215,7 @@ class Browser extends AbstractHelper
      * @param $browser string The name of the Browser
      * @return void
      */
-    public function setBrowser($browser)
+    public function setBrowser($browser): void
     {
         $this->browser_name = $browser;
     }
@@ -243,7 +234,7 @@ class Browser extends AbstractHelper
      * @param string $platform The name of the Platform
      * @return void
      */
-    public function setPlatform($platform)
+    public function setPlatform($platform): void
     {
         $this->platform = $platform;
     }
@@ -262,7 +253,7 @@ class Browser extends AbstractHelper
      * @param string $version The version of the Browser
      * @return void
      */
-    public function setVersion($version)
+    public function setVersion($version): void
     {
         $this->version = preg_replace('/[^0-9,.,a-z,A-Z-]/', '', $version);
     }
@@ -281,7 +272,7 @@ class Browser extends AbstractHelper
      * @param string $version The version of AOL
      * @return void
      */
-    public function setAolVersion($version)
+    public function setAolVersion($version): void
     {
         $this->aol_version = preg_replace('/[^0-9,.,a-z,A-Z]/', '', $version);
     }
@@ -336,7 +327,7 @@ class Browser extends AbstractHelper
      * @param $isAol
      * @return void
      */
-    public function setAol($isAol)
+    public function setAol($isAol): void
     {
         $this->is_aol = $isAol;
     }
@@ -395,7 +386,7 @@ class Browser extends AbstractHelper
      * @param string $agent_string The value for the User Agent
      * @return void
      */
-    public function setUserAgent($agent_string)
+    public function setUserAgent($agent_string): void
     {
         $this->reset();
         $this->agent = $agent_string;
@@ -407,16 +398,16 @@ class Browser extends AbstractHelper
      * @return bool True if the browser is using chromeframe
      * @since 1.7
      */
-    public function isChromeFrame()
+    public function isChromeFrame(): bool
     {
-        return (strpos($this->agent, "chromeframe") !== false);
+        return (str_contains($this->agent, "chromeframe"));
     }
 
     /**
      * Returns a formatted string with a summary of the details of the browser.
      * @return string formatted string with a summary of the browser
      */
-    public function __toString()
+    public function __toString(): string
     {
         $device = ($this->isMobile()) ? 'Mobile' : (($this->isTablet()) ? 'Tablet' : 'Desktop');
         return "<strong>Browser Name:</strong> {$this->getBrowser()}<br/>\n" .
@@ -440,7 +431,7 @@ class Browser extends AbstractHelper
      * Protected routine to determine the browser type
      * @return bool True if the browser was detected otherwise false
      */
-    protected function checkBrowsers()
+    protected function checkBrowsers(): bool
     {
         return (
             // well-known, well-used
@@ -529,7 +520,7 @@ class Browser extends AbstractHelper
      * Determine if the user is using a BlackBerry (last updated 1.7)
      * @return bool True if the browser is the BlackBerry browser otherwise false
      */
-    protected function checkBrowserBlackBerry()
+    protected function checkBrowserBlackBerry(): bool
     {
         if (stripos($this->agent, 'blackberry') !== false) {
             $aresult = explode("/", stristr($this->agent, "BlackBerry"));
@@ -548,7 +539,7 @@ class Browser extends AbstractHelper
      * Determine if the user is using an AOL User Agent (last updated 1.7)
      * @return bool True if the browser is from AOL otherwise false
      */
-    protected function checkForAol()
+    protected function checkForAol(): bool
     {
         $this->setAol(false);
         $this->setAolVersion(self::VERSION_UNKNOWN);
@@ -568,7 +559,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the GoogleBot or not (last updated 1.7)
      * @return bool True if the browser is the GoogletBot otherwise false
      */
-    protected function checkBrowserGoogleBot()
+    protected function checkBrowserGoogleBot(): bool
     {
         if (stripos($this->agent, 'googlebot') !== false) {
             $aresult = explode('/', stristr($this->agent, 'googlebot'));
@@ -587,7 +578,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexBot or not
      * @return bool True if the browser is the YandexBot otherwise false
      */
-    protected function checkBrowserYandexBot()
+    protected function checkBrowserYandexBot(): bool
     {
         if (stripos($this->agent, 'YandexBot') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexBot'));
@@ -606,7 +597,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexImageResizer or not
      * @return bool True if the browser is the YandexImageResizer otherwise false
      */
-    protected function checkBrowserYandexImageResizerBot()
+    protected function checkBrowserYandexImageResizerBot(): bool
     {
         if (stripos($this->agent, 'YandexImageResizer') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexImageResizer'));
@@ -625,7 +616,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexCatalog or not
      * @return bool True if the browser is the YandexCatalog otherwise false
      */
-    protected function checkBrowserYandexCatalogBot()
+    protected function checkBrowserYandexCatalogBot(): bool
     {
         if (stripos($this->agent, 'YandexCatalog') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexCatalog'));
@@ -644,7 +635,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexNews or not
      * @return bool True if the browser is the YandexNews otherwise false
      */
-    protected function checkBrowserYandexNewsBot()
+    protected function checkBrowserYandexNewsBot(): bool
     {
         if (stripos($this->agent, 'YandexNews') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexNews'));
@@ -663,7 +654,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexMetrika or not
      * @return bool True if the browser is the YandexMetrika otherwise false
      */
-    protected function checkBrowserYandexMetrikaBot()
+    protected function checkBrowserYandexMetrikaBot(): bool
     {
         if (stripos($this->agent, 'YandexMetrika') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexMetrika'));
@@ -682,7 +673,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexDirect or not
      * @return bool True if the browser is the YandexDirect otherwise false
      */
-    protected function checkBrowserYandexDirectBot()
+    protected function checkBrowserYandexDirectBot(): bool
     {
         if (stripos($this->agent, 'YandexDirect') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexDirect'));
@@ -701,7 +692,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexWebmaster or not
      * @return bool True if the browser is the YandexWebmaster otherwise false
      */
-    protected function checkBrowserYandexWebmasterBot()
+    protected function checkBrowserYandexWebmasterBot(): bool
     {
         if (stripos($this->agent, 'YandexWebmaster') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexWebmaster'));
@@ -720,7 +711,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexFavicons or not
      * @return bool True if the browser is the YandexFavicons otherwise false
      */
-    protected function checkBrowserYandexFaviconsBot()
+    protected function checkBrowserYandexFaviconsBot(): bool
     {
         if (stripos($this->agent, 'YandexFavicons') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexFavicons'));
@@ -739,7 +730,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexBlogs or not
      * @return bool True if the browser is the YandexBlogs otherwise false
      */
-    protected function checkBrowserYandexBlogsBot()
+    protected function checkBrowserYandexBlogsBot(): bool
     {
         if (stripos($this->agent, 'YandexBlogs') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexBlogs'));
@@ -758,7 +749,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexMedia or not
      * @return bool True if the browser is the YandexMedia otherwise false
      */
-    protected function checkBrowserYandexMediaBot()
+    protected function checkBrowserYandexMediaBot(): bool
     {
         if (stripos($this->agent, 'YandexMedia') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexMedia'));
@@ -777,7 +768,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexVideo or not
      * @return bool True if the browser is the YandexVideo otherwise false
      */
-    protected function checkBrowserYandexVideoBot()
+    protected function checkBrowserYandexVideoBot(): bool
     {
         if (stripos($this->agent, 'YandexVideo') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexVideo'));
@@ -796,7 +787,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the YandexImages or not
      * @return bool True if the browser is the YandexImages otherwise false
      */
-    protected function checkBrowserYandexImagesBot()
+    protected function checkBrowserYandexImagesBot(): bool
     {
         if (stripos($this->agent, 'YandexImages') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YandexImages'));
@@ -815,7 +806,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the MSNBot or not (last updated 1.9)
      * @return bool True if the browser is the MSNBot otherwise false
      */
-    protected function checkBrowserMSNBot()
+    protected function checkBrowserMSNBot(): bool
     {
         if (stripos($this->agent, "msnbot") !== false) {
             $aresult = explode("/", stristr($this->agent, "msnbot"));
@@ -834,7 +825,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the BingBot or not (last updated 1.9)
      * @return bool True if the browser is the BingBot otherwise false
      */
-    protected function checkBrowserBingBot()
+    protected function checkBrowserBingBot(): bool
     {
         if (stripos($this->agent, "bingbot") !== false) {
             $aresult = explode("/", stristr($this->agent, "bingbot"));
@@ -853,7 +844,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the W3C Validator or not (last updated 1.7)
      * @return bool True if the browser is the W3C Validator otherwise false
      */
-    protected function checkBrowserW3CValidator()
+    protected function checkBrowserW3CValidator(): bool
     {
         if (stripos($this->agent, 'W3C-checklink') !== false) {
             $aresult = explode('/', stristr($this->agent, 'W3C-checklink'));
@@ -885,7 +876,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is the Yahoo! Slurp Robot or not (last updated 1.7)
      * @return bool True if the browser is the Yahoo! Slurp Robot otherwise false
      */
-    protected function checkBrowserSlurp()
+    protected function checkBrowserSlurp(): bool
     {
         if (stripos($this->agent, 'slurp') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Slurp'));
@@ -905,7 +896,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Edge or not
      * @return bool True if the browser is Edge otherwise false
      */
-    protected function checkBrowserEdge()
+    protected function checkBrowserEdge(): bool
     {
         if (stripos($this->agent, 'Edge/') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Edge'));
@@ -926,7 +917,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Internet Explorer or not (last updated 1.7)
      * @return bool True if the browser is Internet Explorer otherwise false
      */
-    protected function checkBrowserInternetExplorer()
+    protected function checkBrowserInternetExplorer(): bool
     {
         //  Test for IE11
         if (stripos($this->agent, 'Trident/7.0; rv:11.0') !== false) {
@@ -1026,7 +1017,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Opera or not (last updated 1.7)
      * @return bool True if the browser is Opera otherwise false
      */
-    protected function checkBrowserOpera()
+    protected function checkBrowserOpera(): bool
     {
         if (stripos($this->agent, 'opera mini') !== false) {
             $resultant = stristr($this->agent, 'opera mini');
@@ -1092,7 +1083,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Chrome or not (last updated 1.7)
      * @return bool True if the browser is Chrome otherwise false
      */
-    protected function checkBrowserChrome()
+    protected function checkBrowserChrome(): bool
     {
         if (stripos($this->agent, 'Chrome') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Chrome'));
@@ -1118,7 +1109,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is WebTv or not (last updated 1.7)
      * @return bool True if the browser is WebTv otherwise false
      */
-    protected function checkBrowserWebTv()
+    protected function checkBrowserWebTv(): bool
     {
         if (stripos($this->agent, 'webtv') !== false) {
             $aresult = explode('/', stristr($this->agent, 'webtv'));
@@ -1136,7 +1127,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is NetPositive or not (last updated 1.7)
      * @return bool True if the browser is NetPositive otherwise false
      */
-    protected function checkBrowserNetPositive()
+    protected function checkBrowserNetPositive(): bool
     {
         if (stripos($this->agent, 'NetPositive') !== false) {
             $aresult = explode('/', stristr($this->agent, 'NetPositive'));
@@ -1154,7 +1145,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Galeon or not (last updated 1.7)
      * @return bool True if the browser is Galeon otherwise false
      */
-    protected function checkBrowserGaleon()
+    protected function checkBrowserGaleon(): bool
     {
         if (stripos($this->agent, 'galeon') !== false) {
             $aresult = explode(' ', stristr($this->agent, 'galeon'));
@@ -1172,7 +1163,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Konqueror or not (last updated 1.7)
      * @return bool True if the browser is Konqueror otherwise false
      */
-    protected function checkBrowserKonqueror()
+    protected function checkBrowserKonqueror(): bool
     {
         if (stripos($this->agent, 'Konqueror') !== false) {
             $aresult = explode(' ', stristr($this->agent, 'Konqueror'));
@@ -1190,7 +1181,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is iCab or not (last updated 1.7)
      * @return bool True if the browser is iCab otherwise false
      */
-    protected function checkBrowserIcab()
+    protected function checkBrowserIcab(): bool
     {
         if (stripos($this->agent, 'icab') !== false) {
             $aversion = explode(' ', stristr(str_replace('/', ' ', $this->agent), 'icab'));
@@ -1207,7 +1198,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is OmniWeb or not (last updated 1.7)
      * @return bool True if the browser is OmniWeb otherwise false
      */
-    protected function checkBrowserOmniWeb()
+    protected function checkBrowserOmniWeb(): bool
     {
         if (stripos($this->agent, 'omniweb') !== false) {
             $aresult = explode('/', stristr($this->agent, 'omniweb'));
@@ -1223,7 +1214,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Phoenix or not (last updated 1.7)
      * @return bool True if the browser is Phoenix otherwise false
      */
-    protected function checkBrowserPhoenix()
+    protected function checkBrowserPhoenix(): bool
     {
         if (stripos($this->agent, 'Phoenix') !== false) {
             $aversion = explode('/', stristr($this->agent, 'Phoenix'));
@@ -1240,7 +1231,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Firebird or not (last updated 1.7)
      * @return bool True if the browser is Firebird otherwise false
      */
-    protected function checkBrowserFirebird()
+    protected function checkBrowserFirebird(): bool
     {
         if (stripos($this->agent, 'Firebird') !== false) {
             $aversion = explode('/', stristr($this->agent, 'Firebird'));
@@ -1258,7 +1249,7 @@ class Browser extends AbstractHelper
      * NOTE: (http://browser.netscape.com/ - Official support ended on March 1st, 2008)
      * @return bool True if the browser is Netscape Navigator 9+ otherwise false
      */
-    protected function checkBrowserNetscapeNavigator9Plus()
+    protected function checkBrowserNetscapeNavigator9Plus(): bool
     {
         if (stripos($this->agent, 'Firefox') !== false && preg_match(
                 '/Navigator\/([^ ]*)/i',
@@ -1286,7 +1277,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Shiretoko or not (https://wiki.mozilla.org/Projects/shiretoko) (last updated 1.7)
      * @return bool True if the browser is Shiretoko otherwise false
      */
-    protected function checkBrowserShiretoko()
+    protected function checkBrowserShiretoko(): bool
     {
         if (stripos($this->agent, 'Mozilla') !== false && preg_match(
                 '/Shiretoko\/([^ ]*)/i',
@@ -1304,7 +1295,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Ice Cat or not (http://en.wikipedia.org/wiki/GNU_IceCat) (last updated 1.7)
      * @return bool True if the browser is Ice Cat otherwise false
      */
-    protected function checkBrowserIceCat()
+    protected function checkBrowserIceCat(): bool
     {
         if (stripos($this->agent, 'Mozilla') !== false && preg_match('/IceCat\/([^ ]*)/i', $this->agent, $matches)) {
             $this->setVersion($matches[1]);
@@ -1318,11 +1309,11 @@ class Browser extends AbstractHelper
      * Determine if the browser is Nokia or not (last updated 1.7)
      * @return bool True if the browser is Nokia otherwise false
      */
-    protected function checkBrowserNokia()
+    protected function checkBrowserNokia(): bool
     {
         if (preg_match("/Nokia([^\/]+)\/([^ SP]+)/i", $this->agent, $matches)) {
             $this->setVersion($matches[2]);
-            if (stripos($this->agent, 'Series60') !== false || strpos($this->agent, 'S60') !== false) {
+            if (stripos($this->agent, 'Series60') !== false || str_contains($this->agent, 'S60')) {
                 $this->setBrowser(self::BROWSER_NOKIA_S60);
             } else {
                 $this->setBrowser(self::BROWSER_NOKIA);
@@ -1337,7 +1328,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Firefox or not (last updated 1.7)
      * @return bool True if the browser is Firefox otherwise false
      */
-    protected function checkBrowserFirefox()
+    protected function checkBrowserFirefox(): bool
     {
         if (stripos($this->agent, 'safari') === false) {
             if (preg_match("/Firefox[\/ \(]([^ ;\)]+)/i", $this->agent, $matches)) {
@@ -1367,7 +1358,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Firefox or not (last updated 1.7)
      * @return bool True if the browser is Firefox otherwise false
      */
-    protected function checkBrowserIceweasel()
+    protected function checkBrowserIceweasel(): bool
     {
         if (stripos($this->agent, 'Iceweasel') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Iceweasel'));
@@ -1385,7 +1376,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Mozilla or not (last updated 1.7)
      * @return bool True if the browser is Mozilla otherwise false
      */
-    protected function checkBrowserMozilla()
+    protected function checkBrowserMozilla(): bool
     {
         if (stripos($this->agent, 'mozilla') !== false && preg_match(
                 '/rv:[0-9].[0-9][a-b]?/i',
@@ -1424,7 +1415,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Lynx or not (last updated 1.7)
      * @return bool True if the browser is Lynx otherwise false
      */
-    protected function checkBrowserLynx()
+    protected function checkBrowserLynx(): bool
     {
         if (stripos($this->agent, 'lynx') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Lynx'));
@@ -1440,7 +1431,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Amaya or not (last updated 1.7)
      * @return bool True if the browser is Amaya otherwise false
      */
-    protected function checkBrowserAmaya()
+    protected function checkBrowserAmaya(): bool
     {
         if (stripos($this->agent, 'amaya') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Amaya'));
@@ -1458,7 +1449,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Safari or not (last updated 1.7)
      * @return bool True if the browser is Safari otherwise false
      */
-    protected function checkBrowserSafari()
+    protected function checkBrowserSafari(): bool
     {
         if (stripos($this->agent, 'Safari') !== false
             && stripos($this->agent, 'iPhone') === false
@@ -1481,7 +1472,7 @@ class Browser extends AbstractHelper
      * Check browser
      * @return bool
      */
-    protected function checkBrowserSamsung()
+    protected function checkBrowserSamsung(): bool
     {
         if (stripos($this->agent, 'SamsungBrowser') !== false) {
             $aresult = explode('/', stristr($this->agent, 'SamsungBrowser'));
@@ -1501,7 +1492,7 @@ class Browser extends AbstractHelper
      * Check browser
      * @return bool
      */
-    protected function checkBrowserSilk()
+    protected function checkBrowserSilk(): bool
     {
         if (stripos($this->agent, 'Silk') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Silk'));
@@ -1521,7 +1512,7 @@ class Browser extends AbstractHelper
      * Check browser
      * @return bool
      */
-    protected function checkBrowserIframely()
+    protected function checkBrowserIframely(): bool
     {
         if (stripos($this->agent, 'Iframely') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Iframely'));
@@ -1541,7 +1532,7 @@ class Browser extends AbstractHelper
      * Check browser
      * @return bool
      */
-    protected function checkBrowserCocoa()
+    protected function checkBrowserCocoa(): bool
     {
         if (stripos($this->agent, 'CocoaRestClient') !== false) {
             $aresult = explode('/', stristr($this->agent, 'CocoaRestClient'));
@@ -1561,7 +1552,7 @@ class Browser extends AbstractHelper
      * Detect if URL is loaded from FacebookExternalHit
      * @return bool True if it detects FacebookExternalHit otherwise false
      */
-    protected function checkFacebookExternalHit()
+    protected function checkFacebookExternalHit(): bool
     {
         if (stristr($this->agent, 'FacebookExternalHit')) {
             $this->setRobot();
@@ -1575,7 +1566,7 @@ class Browser extends AbstractHelper
      * Detect if URL is being loaded from internal Facebook browser
      * @return bool True if it detects internal Facebook browser otherwise false
      */
-    protected function checkForFacebookIos()
+    protected function checkForFacebookIos(): bool
     {
         if (stristr($this->agent, 'FBIOS')) {
             $this->setFacebook();
@@ -1588,7 +1579,7 @@ class Browser extends AbstractHelper
      * Detect Version for the Safari browser on iOS devices
      * @return bool True if it detects the version correctly otherwise false
      */
-    protected function getSafariVersionOnIos()
+    protected function getSafariVersionOnIos(): bool
     {
         $aresult = explode('/', stristr($this->agent, 'Version'));
         if (isset($aresult[1])) {
@@ -1603,7 +1594,7 @@ class Browser extends AbstractHelper
      * Detect Version for the Chrome browser on iOS devices
      * @return bool True if it detects the version correctly otherwise false
      */
-    protected function getChromeVersionOnIos()
+    protected function getChromeVersionOnIos(): bool
     {
         $aresult = explode('/', stristr($this->agent, 'CriOS'));
         if (isset($aresult[1])) {
@@ -1619,7 +1610,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is iPhone or not (last updated 1.7)
      * @return bool True if the browser is iPhone otherwise false
      */
-    protected function checkBrowseriPhone()
+    protected function checkBrowseriPhone(): bool
     {
         if (stripos($this->agent, 'iPhone') !== false) {
             $this->setVersion(self::VERSION_UNKNOWN);
@@ -1637,7 +1628,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is iPad or not (last updated 1.7)
      * @return bool True if the browser is iPad otherwise false
      */
-    protected function checkBrowseriPad()
+    protected function checkBrowseriPad(): bool
     {
         if (stripos($this->agent, 'iPad') !== false) {
             $this->setVersion(self::VERSION_UNKNOWN);
@@ -1655,7 +1646,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is iPod or not (last updated 1.7)
      * @return bool True if the browser is iPod otherwise false
      */
-    protected function checkBrowseriPod()
+    protected function checkBrowseriPod(): bool
     {
         if (stripos($this->agent, 'iPod') !== false) {
             $this->setVersion(self::VERSION_UNKNOWN);
@@ -1673,7 +1664,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Android or not (last updated 1.7)
      * @return bool True if the browser is Android otherwise false
      */
-    protected function checkBrowserAndroid()
+    protected function checkBrowserAndroid(): bool
     {
         if (stripos($this->agent, 'Android') !== false) {
             $aresult = explode(' ', stristr($this->agent, 'Android'));
@@ -1698,7 +1689,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Vivaldi
      * @return bool True if the browser is Vivaldi otherwise false
      */
-    protected function checkBrowserVivaldi()
+    protected function checkBrowserVivaldi(): bool
     {
         if (stripos($this->agent, 'Vivaldi') !== false) {
             $aresult = explode('/', stristr($this->agent, 'Vivaldi'));
@@ -1716,7 +1707,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is Yandex
      * @return bool True if the browser is Yandex otherwise false
      */
-    protected function checkBrowserYandex()
+    protected function checkBrowserYandex(): bool
     {
         if (stripos($this->agent, 'YaBrowser') !== false) {
             $aresult = explode('/', stristr($this->agent, 'YaBrowser'));
@@ -1744,7 +1735,7 @@ class Browser extends AbstractHelper
      * Determine if the browser is a PlayStation
      * @return bool True if the browser is PlayStation otherwise false
      */
-    protected function checkBrowserPlayStation()
+    protected function checkBrowserPlayStation(): bool
     {
         if (stripos($this->agent, 'PlayStation ') !== false) {
             $aresult = explode(' ', stristr($this->agent, 'PlayStation '));

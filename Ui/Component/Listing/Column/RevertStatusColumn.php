@@ -27,6 +27,7 @@ class RevertStatusColumn extends Column
      * @param array $dataSource
      * @return array
      */
+    #[\Override]
     public function prepareDataSource(array $dataSource): array
     {
         if (isset($dataSource['data']['items'])) {
