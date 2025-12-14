@@ -24,7 +24,6 @@ class Selector extends Template
 {
     /**
      * Revert Activity Log action URL
-     * @return string
      */
     public function getRevertUrl(): string
     {
