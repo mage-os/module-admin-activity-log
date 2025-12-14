@@ -27,7 +27,7 @@ class Collection extends AbstractCollection
      * Define resource model
      * @return void
      */
-    public function _construct()
+    public function _construct(): void
     {
         $this->_init(
             \MageOS\AdminActivityLog\Model\ActivityLog::class,
