@@ -23,17 +23,18 @@ use Magento\Framework\DataObject;
 interface ModelInterface
 {
     /**
-     * Get old data
      * @param DataObject $model
      * @return mixed
      */
     public function getOldData(DataObject $model);
 
     /**
-     * Get edit data
      * @param DataObject $model
-     * @param $fieldArray
-     * @return mixed
+     * @param array<string, string> $fieldArray
+     * @return array{}|array<string, array{
+     *       old_value: string,
+     *       new_value: string
+     *   }>
      */
-    public function getEditData(DataObject $model, $fieldArray);
+    public function getEditData(DataObject $model, array $fieldArray);
 }
