@@ -26,7 +26,7 @@ class ActivityLogDetail extends AbstractDb
      * Initialize resource model
      * @return void
      */
-    public function _construct()
+    public function _construct(): void
     {
         $this->_init('admin_activity_detail', 'entity_id');
     }
