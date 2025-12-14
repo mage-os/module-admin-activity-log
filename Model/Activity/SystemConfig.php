@@ -26,12 +26,6 @@ use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
  */
 class SystemConfig implements ModelInterface
 {
-    /**
-     * SystemConfig constructor.
-     * @param DataObject $dataObject
-     * @param ValueFactory $valueFactory
-     * @param WriterInterface $configWriter
-     */
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ValueFactory $valueFactory,
@@ -41,10 +35,8 @@ class SystemConfig implements ModelInterface
 
     /**
      * Get config path
-     * @param $model
-     * @return string
      */
-    public function getPath($model): string
+    public function getPath(DataObject $model): string
     {
         if ($model->getData('path')) {
             return current(
@@ -60,10 +52,8 @@ class SystemConfig implements ModelInterface
 
     /**
      * Get old activity data of system config module
-     * @param DataObject $model
-     * @return mixed
      */
-    public function getOldData(DataObject $model)
+    public function getOldData(DataObject $model): DataObject
     {
         $path = $this->getPath($model);
         $systemData = $this->valueFactory->create()->getCollection()->addFieldToFilter(
@@ -89,7 +79,10 @@ class SystemConfig implements ModelInterface
      * Get edit activity data of system config module
      * @param DataObject $model
      * @param array $fieldArray
-     * @return array{old_value: mixed, new_value: mixed}[]
+     * @return array{}|array<string, array{
+     *     old_value: mixed,
+     *     new_value: mixed
+     * }>
      */
     public function getEditData(DataObject $model, $fieldArray): array
     {
