@@ -33,18 +33,13 @@ class Benchmark extends AbstractHelper
     /**
      * @var String[] Start time of execution
      */
-    private $startTime = [];
+    private array $startTime = [];
 
     /**
      * @var String[] End time of execution
      */
-    private $endTime = [];
+    private array $endTime = [];
 
-    /**
-     * Benchmark constructor.
-     * @param Context $context
-     * @param LoggerInterface $logger
-     */
     public function __construct(
         Context $context,
         protected LoggerInterface $logger
@@ -54,10 +49,8 @@ class Benchmark extends AbstractHelper
 
     /**
      * log info about start time in millisecond
-     * @param $method
-     * @return void
      */
-    public function start($method): void
+    public function start(string $method): void
     {
         $this->reset($method);
         if (self::BENCHMARK_ENABLE) {
@@ -70,10 +63,8 @@ class Benchmark extends AbstractHelper
 
     /**
      * log info about end time and time diiference in millisecond
-     * @param $method
-     * @return void
      */
-    public function end($method): void
+    public function end(string $method): void
     {
         if (self::BENCHMARK_ENABLE) {
             $this->endTime[$method] = round(microtime(true) * 1000);
@@ -89,10 +80,8 @@ class Benchmark extends AbstractHelper
 
     /**
      * Reset start time and end time
-     * @param $method
-     * @return void
      */
-    public function reset($method): void
+    public function reset(string $method): void
     {
         $this->startTime[$method] = 0;
         $this->endTime[$method] = 0;
