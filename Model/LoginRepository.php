@@ -36,7 +36,7 @@ class LoginRepository implements LoginRepositoryInterface
     /**
      * LoginRepository constructor.
      * @param LoginFactory $loginFactory
-     * @param ResourceModel\Login\CollectionFactory $collectionFactory
+     * @param CollectionFactory $collectionFactory
      * @param Processor $processor
      */
     public function __construct(

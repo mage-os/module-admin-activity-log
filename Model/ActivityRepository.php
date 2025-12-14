@@ -38,7 +38,7 @@ class ActivityRepository implements ActivityRepositoryInterface
      * @param ResourceModel\Activity\CollectionFactory $collectionFactory
      * @param ActivityLogDetailFactory $activityLogDetailFactory
      * @param ActivityLogFactory $activityLogFactory
-     * @param ResourceModel\ActivityLog\CollectionFactory $LogCollectionFactory
+     * @param CollectionFactory $LogCollectionFactory
      * @param SystemConfig $systemConfig
      * @param Activity\ThemeConfig $themeConfig
      * @param ObjectManagerInterface $objectManager
@@ -195,7 +195,7 @@ class ActivityRepository implements ActivityRepositoryInterface
         if (Data::isWildCardModel($model)) {
             return $this->systemConfig->getOldData($model);
         }
-        $data = $this->objectManager->get(get_class($model))->load($model->getId());
+        $data = $this->objectManager->get($model::class)->load($model->getId());
         if ($data) {
             return $data;
         }

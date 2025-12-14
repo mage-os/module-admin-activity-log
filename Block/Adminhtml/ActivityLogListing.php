@@ -60,7 +60,7 @@ class ActivityLogListing extends Template
      * Get admin activity details
      * @return array
      */
-    public function getAdminDetails()
+    public function getAdminDetails(): array
     {
         $id = $this->getRequest()->getParam('id');
         $activity = $this->activityRepository->getActivityById($id);

@@ -31,9 +31,8 @@ class Config
 
     /**
      * Translated and sorted labels
-     * @var array
      */
-    private $labels = [];
+    private array $labels = [];
 
     /**
      * Config constructor.
