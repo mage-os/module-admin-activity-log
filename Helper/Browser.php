@@ -243,7 +243,7 @@ class Browser extends AbstractHelper implements \Stringable
      * The version of the browser.
      * @return string Version of the browser (will only contain alpha-numeric characters and a period)
      */
-    public function getVersion()
+    public function getVersion(): ?string
     {
         return $this->version;
     }
@@ -262,7 +262,7 @@ class Browser extends AbstractHelper implements \Stringable
      * The version of AOL.
      * @return string Version of AOL (will only contain alpha-numeric characters and a period)
      */
-    public function getAolVersion()
+    public function getAolVersion(): ?string
     {
         return $this->aol_version;
     }
