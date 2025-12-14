@@ -12,36 +12,40 @@
  * @license    https://kiwicommerce.co.uk/magento2-extension-license/
  */
 
-namespace MageOS\AdminActivityLog\Plugin\App;
+namespace MageOS\AdminActivityLog\Plugin;
 
-use Magento\Framework\App\Action\AbstractAction;
+use Magento\Backend\Model\Auth;
+use MageOS\AdminActivityLog\Api\LoginRepositoryInterface;
 use MageOS\AdminActivityLog\Helper\Benchmark;
-use MageOS\AdminActivityLog\Model\Processor;
+use MageOS\AdminActivityLog\Helper\Data as Helper;
 
 /**
- * Class Action
- * @package MageOS\AdminActivityLog\Plugin\App
+ * Class Auth
+ * @package MageOS\AdminActivityLog\Plugin
  */
-class Action
+class AuthPlugin
 {
     public function __construct(
-        private readonly Processor $processor,
+        private readonly Helper $helper,
+        private readonly LoginRepositoryInterface $loginRepository,
         private readonly Benchmark $benchmark
     ) {
     }
 
     /**
-     * Get before dispatch data
+     * Track admin logout activity
      */
-    public function beforeDispatch(
-        AbstractAction $subject
-    ): void {
+    public function aroundLogout(Auth $auth, callable $proceed): void
+    {
         $this->benchmark->start(__METHOD__);
-        $actionName = $subject->getRequest()->getActionName();
-        $fullActionName = $subject->getRequest()->getFullActionName();
 
-        $this->processor->init($fullActionName, $actionName);
-        $this->processor->addPageVisitLog($subject->getRequest()->getModuleName());
+        if ($this->helper->isLoginEnable()) {
+            $user = $auth->getAuthStorage()->getUser();
+            $this->loginRepository->setUser($user)->addLogoutLog();
+        }
+
+        $proceed();
+
         $this->benchmark->end(__METHOD__);
     }
 }

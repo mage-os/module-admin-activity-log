@@ -22,7 +22,7 @@ use MageOS\AdminActivityLog\Helper\Benchmark;
  * Class Delete
  * @package MageOS\AdminActivityLog\Plugin\User
  */
-class Delete
+class DeletePlugin
 {
     public function __construct(
         private readonly Benchmark $benchmark

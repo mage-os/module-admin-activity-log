@@ -15,12 +15,12 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Framework\App\Action\AbstractAction">
-        <plugin name="app_action" type="MageOS\AdminActivityLog\Plugin\App\Action" sortOrder="1"/>
+        <plugin name="before_dispatch_action" type="MageOS\AdminActivityLog\Plugin\App\ActionPlugin" sortOrder="1"/>
     </type>
     <type name="Magento\User\Model\ResourceModel\User">
-        <plugin name="app_action" type="MageOS\AdminActivityLog\Plugin\User\Delete" sortOrder="1"/>
+        <plugin name="app_action" type="MageOS\AdminActivityLog\Plugin\User\DeletePlugin" sortOrder="1"/>
     </type>
     <type name="Magento\Backend\Model\Auth">
-        <plugin name="logout_auth" type="MageOS\AdminActivityLog\Plugin\Auth" sortOrder="1" />
+        <plugin name="logout_auth" type="MageOS\AdminActivityLog\Plugin\AuthPlugin" sortOrder="1" />
     </type>
 </config>
