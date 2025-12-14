@@ -29,18 +29,9 @@ class ClearLog
 {
     /**
      * Default date format
-     * @var string
      */
-    protected const DATE_FORMAT = 'Y-m-d H:i:s';
+    protected const string DATE_FORMAT = 'Y-m-d H:i:s';
 
-    /**
-     * ClearLog constructor.
-     * @param LoggerInterface $logger
-     * @param DateTime $dateTime
-     * @param Helper $helper
-     * @param ActivityRepositoryInterface $activityRepository
-     * @param LoginRepositoryInterface $loginRepository
-     */
     public function __construct(
         protected readonly LoggerInterface $logger,
         protected readonly DateTime $dateTime,
