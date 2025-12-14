@@ -22,15 +22,11 @@ use MageOS\AdminActivityLog\Model\ActivityFactory;
  */
 class Status
 {
-    public const ACTIVITY_NONE = 0;
-    public const ACTIVITY_REVERTABLE = 1;
-    public const ACTIVITY_REVERT_SUCCESS = 2;
-    public const ACTIVITY_FAIL = 3;
+    public const int ACTIVITY_NONE = 0;
+    public const int ACTIVITY_REVERTABLE = 1;
+    public const int ACTIVITY_REVERT_SUCCESS = 2;
+    public const int ACTIVITY_FAIL = 3;
 
-    /**
-     * Status constructor.
-     * @param ActivityFactory $activityFactory
-     */
     public function __construct(
         protected readonly ActivityFactory $activityFactory
     ) {
@@ -38,12 +34,10 @@ class Status
 
     /**
      * Set success revert status
-     * @param $activityId
-     * @return void
      */
-    public function markSuccess($activityId): void
+    public function markSuccess(int $activityId): void
     {
-        $activityModel = $this->activityFactory->create()->load((int)$activityId);
+        $activityModel = $this->activityFactory->create()->load($activityId);
         // After successful revert, activity is no longer revertable
         $activityModel->setIsRevertable(false);
         $activityModel->save();
@@ -51,12 +45,10 @@ class Status
 
     /**
      * Set fail revert status
-     * @param $activityId
-     * @return void
      */
-    public function markFail($activityId): void
+    public function markFail(int $activityId): void
     {
-        $activityModel = $this->activityFactory->create()->load((int)$activityId);
+        $activityModel = $this->activityFactory->create()->load($activityId);
         // Revert attempt failed; keep activity revertable
         $activityModel->setIsRevertable(true);
         $activityModel->save();
