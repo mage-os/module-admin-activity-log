@@ -340,7 +340,7 @@ class Processor
      * @param $model
      * @return bool|Activity
      */
-    public function initActivity($model)
+    public function initActivity($model): false|Activity
     {
         if (!$this->authSession->isLoggedIn()) {
             return false;
