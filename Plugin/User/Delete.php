@@ -14,6 +14,7 @@
 
 namespace MageOS\AdminActivityLog\Plugin\User;
 
+use Magento\Framework\Model\AbstractModel;
 use Magento\User\Model\ResourceModel\User;
 use MageOS\AdminActivityLog\Helper\Benchmark;
 
@@ -23,28 +24,19 @@ use MageOS\AdminActivityLog\Helper\Benchmark;
  */
 class Delete
 {
-    /**
-     * Delete constructor.
-     * @param Benchmark $benchmark
-     */
     public function __construct(
-        protected readonly Benchmark $benchmark
+        private readonly Benchmark $benchmark
     ) {
     }
 
-    /**
-     * @param User $user
-     * @param callable $proceed
-     * @param $object
-     * @return mixed
-     */
-    public function aroundDelete(User $user, callable $proceed, $object)
+    public function aroundDelete(User $subject, callable $proceed, AbstractModel $user): bool
     {
         $this->benchmark->start(__METHOD__);
-        $object->load($object->getId());
+        $user->load($user->getId());
 
-        $result = $proceed($object);
-        $object->afterDelete();
+        /** @var bool $result */
+        $result = $proceed($user);
+        $user->afterDelete();
 
         $this->benchmark->end(__METHOD__);
         return $result;
