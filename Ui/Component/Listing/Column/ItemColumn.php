@@ -28,7 +28,7 @@ use Magento\Ui\Component\Listing\Columns\Column;
  */
 class ItemColumn extends Column
 {
-    public const int URL_COUNT = 7;
+    public const URL_COUNT = 7;
 
     /**
      * @var string[]
