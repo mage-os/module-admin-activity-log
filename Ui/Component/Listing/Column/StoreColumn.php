@@ -22,7 +22,7 @@ use Magento\Store\Ui\Component\Listing\Column\Store;
  */
 class StoreColumn extends Store
 {
-    public const string KEY_FIELD = 'store_id';
+    public const KEY_FIELD = 'store_id';
 
     /**
      * Prepare Item
