@@ -120,7 +120,7 @@ class PostDispatch
 
                 $log = clone $activity;
                 $log->setItemName(
-                    $model->getData($processor->getConfig()->getActivityModuleItemField($config['module']))
+                    $model->getData($processor->getConfig()->getActivityModuleItemField($config['module'])) ?? ''
                 );
                 $log->setItemUrl($processor->getEditUrl($model));
 

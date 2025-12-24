@@ -72,6 +72,7 @@ class LoginRepository implements LoginRepositoryInterface
      */
     protected function initLoginActivity(): Login
     {
+        /** @var Login $login */
         $login = $this->loginFactory->create();
 
         $user = $this->getUser();
@@ -81,7 +82,7 @@ class LoginRepository implements LoginRepositoryInterface
         }
 
         $login->setRemoteIp($this->processor->getRemoteAddress()->getRemoteAddress());
-        $login->setForwardedIp($this->processor->getRequest()->getServer('HTTP_X_FORWARDED_FOR'));
+        $login->setForwardedIp((string)$this->processor->getRequest()->getServer('HTTP_X_FORWARDED_FOR'));
         $login->setUserAgent($this->processor->getHandler()->getHeader()->getHttpUserAgent());
 
         return $login;

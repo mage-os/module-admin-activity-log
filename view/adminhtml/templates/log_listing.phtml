@@ -14,7 +14,6 @@
  */
 
 /** @var Escaper $escaper */
-
 /** @var ActivityLogListing $block */
 
 use Magento\Framework\Escaper;
@@ -48,6 +47,21 @@ $adminDetails = $block->getAdminDetails();
                     <td style="font-size: 16px;font-weight: 600;">Action</td>
                     <td width="1%" style="font-size: 16px;font-weight: 600;">:</td>
                     <td><?= $escaper->escapeHtml($adminDetails['fullaction']) ?> </td>
+                </tr>
+                <tr style="height: 35px;text-indent: 10px;">
+                    <td style="font-size: 16px;font-weight: 600;">Scope</td>
+                    <td width="1%" style="font-size: 16px;font-weight: 600;">:</td>
+                    <td><?= $escaper->escapeHtml($adminDetails['scope']) ?> </td>
+                </tr>
+                <tr style="height: 35px;text-indent: 10px;">
+                    <td style="font-size: 16px;font-weight: 600;">Store</td>
+                    <td width="1%" style="font-size: 16px;font-weight: 600;">:</td>
+                    <td><?= $escaper->escapeHtml($adminDetails['store_name']) ?> </td>
+                </tr>
+                <tr style="height: 35px;text-indent: 10px;">
+                    <td style="font-size: 16px;font-weight: 600;">Path</td>
+                    <td width="1%" style="font-size: 16px;font-weight: 600;">:</td>
+                    <td><?= $escaper->escapeHtml($adminDetails['path']) ?> </td>
                 </tr>
                 <tr style="height: 35px;text-indent: 10px;">
                     <td style="font-size: 16px;font-weight: 600;">User Agent</td>
