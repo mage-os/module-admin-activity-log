@@ -25,7 +25,7 @@ use Magento\Framework\View\Result\PageFactory;
  */
 class Index extends Action
 {
-    public const string ADMIN_RESOURCE = 'MageOS_AdminActivityLog::activity';
+    public const ADMIN_RESOURCE = 'MageOS_AdminActivityLog::activity';
 
     public function __construct(
         Context $context,
