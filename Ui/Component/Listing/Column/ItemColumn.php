@@ -111,7 +111,6 @@ class ItemColumn extends Column
      * @param string $fieldSeparator
      * @param string $quote
      */
-    #[\Override]
     public function serialize($keys = [], $valueSeparator = '=', $fieldSeparator = ' ', $quote = '"'): string
     {
         $data = [];
