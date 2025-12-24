@@ -28,13 +28,12 @@ use MageOS\AdminActivityLog\Helper\Browser;
  */
 class ActivityLogListing extends Template
 {
-
     protected $_template = 'MageOS_AdminActivityLog::log_listing.phtml';
 
     public function __construct(
+        Context $context,
         protected readonly ActivityRepositoryInterface $activityRepository,
         protected readonly Browser $browser,
-        Context $context,
         array $data = [],
         ?JsonHelper $jsonHelper = null,
         ?DirectoryHelper $directoryHelper = null
