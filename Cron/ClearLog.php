@@ -30,7 +30,7 @@ class ClearLog
     /**
      * Default date format
      */
-    protected const string DATE_FORMAT = 'Y-m-d H:i:s';
+    protected const DATE_FORMAT = 'Y-m-d H:i:s';
 
     public function __construct(
         protected readonly LoggerInterface $logger,
