@@ -26,9 +26,9 @@ use MageOS\AdminActivityLog\Model\Activity\ThemeConfig;
  */
 class TrackField extends AbstractHelper
 {
-    public const string SYSTEM_METHOD = 'getSystemConfigFieldData';
-    public const string THEME_METHOD = 'getThemeConfigFieldData';
-    public const string PRODUCT_METHOD = 'getProductFieldData';
+    public const SYSTEM_METHOD = 'getSystemConfigFieldData';
+    public const THEME_METHOD = 'getThemeConfigFieldData';
+    public const PRODUCT_METHOD = 'getProductFieldData';
 
     public function __construct(
         Context $context,
