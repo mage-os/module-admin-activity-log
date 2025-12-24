@@ -29,6 +29,8 @@ use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
  */
 class SystemConfig implements ModelInterface
 {
+    public const MODULE_SYSTEM_CONFIGURATION = 'system_configuration';
+
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ValueFactory $valueFactory,
