@@ -26,7 +26,7 @@ use MageOS\AdminActivityLog\Model\Processor;
  */
 class DeleteAfter implements ObserverInterface
 {
-    public const string SYSTEM_CONFIG = 'adminhtml_system_config_save';
+    public const SYSTEM_CONFIG = 'adminhtml_system_config_save';
 
     public function __construct(
         private readonly Processor $processor,
