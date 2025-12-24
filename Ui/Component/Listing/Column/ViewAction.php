@@ -53,7 +53,6 @@ class ViewAction extends Column
      * @param array<string, mixed> $dataSource
      * @return array<string, mixed>
      */
-    #[\Override]
     public function prepareDataSource(array $dataSource): array
     {
         if (isset($dataSource['data']['items'])) {
