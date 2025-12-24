@@ -192,7 +192,7 @@ class Processor
                 || !empty($model->getParentId()))) {
             $id = ($model->getOrderId()) ? $model->getOrderId() : $model->getParentId();
         }
-        if ($this->eventConfig['module'] === 'system_configuration') {
+        if ($this->eventConfig['module'] === SystemConfig::MODULE_SYSTEM_CONFIGURATION) {
             $id = $model->getData('field_config')['path'];
         }
 
