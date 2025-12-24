@@ -369,7 +369,7 @@ class Processor
 
         $itemName = $model->getData(
             $this->config->getActivityModuleItemField($this->eventConfig['module'])
-        );
+        ) ?? '';
 
         $itemPath = '';
         if ($this->eventConfig['module'] === 'system_configuration') {
@@ -432,7 +432,12 @@ class Processor
             return $model->getScopeId();
         }
         if (isset($data['store_id'])) {
-            return $model->getStoreId();
+            $storeId = $model->getStoreId();
+            if (is_array($storeId)) {
+                $storeId = reset($storeId);
+            }
+
+            return (int)$storeId;
         }
         return $this->storeManager->getStore()->getId();
     }
