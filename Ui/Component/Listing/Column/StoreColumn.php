@@ -28,7 +28,6 @@ class StoreColumn extends Store
      * Prepare Item
      * @param array<string, string> $item
      */
-    #[\Override]
     public function prepareItem(array $item): string
     {
         $this->storeKey = !empty($this->storeKey) ? $this->storeKey : self::KEY_FIELD;
