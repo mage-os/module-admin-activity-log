@@ -93,5 +93,5 @@ interface ActivityConfigInterface
      *
      * @return int Number of days
      */
-    public function getClearLogDays(): int
+    public function getClearLogDays(): int;
 }
