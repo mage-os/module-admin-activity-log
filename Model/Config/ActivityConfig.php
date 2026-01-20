@@ -18,6 +18,7 @@ use Magento\Framework\App\Config\Value;
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Config;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Service class for admin activity configuration
