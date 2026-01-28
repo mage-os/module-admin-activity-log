@@ -134,7 +134,10 @@ class SystemConfig implements ModelInterface
         $logData = [];
 
         $path = $this->getPath($model);
-        $result = $this->collectAdditionalData($model->getOrigData(), $model->getGroups());
+        $result = $this->collectAdditionalData(
+            $model->getOrigData() ?? [],
+            $model->getGroups() ?? []
+        );
 
         $model->setConfig('System Configuration');
         $model->setId($path);
