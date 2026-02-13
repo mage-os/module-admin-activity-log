@@ -17,7 +17,7 @@
     </head>
     <body>
         <referenceContainer name="js">
-            <block class="MageOS\AdminActivityLog\Block\Adminhtml\Selector" template="MageOS_AdminActivityLog::activity/js.phtml" name="activity.view.model.js"/>
+            <block class="Magento\Backend\Block\Template" template="MageOS_AdminActivityLog::activity/js.phtml" name="activity.view.model.js"/>
         </referenceContainer>
         <referenceContainer name="content">
             <uiComponent name="admin_activity_listing"/>

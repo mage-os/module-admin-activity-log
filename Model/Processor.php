@@ -435,6 +435,9 @@ class Processor
         if (isset($data['store_id'])) {
             $storeId = $model->getStoreId();
             if (is_array($storeId)) {
+                if (empty($storeId)) {
+                    return (int)$this->storeManager->getStore()->getId();
+                }
                 $storeId = reset($storeId);
             }
 
@@ -450,14 +453,17 @@ class Processor
     public function getScope(): string
     {
         $request = $this->requestContext->getRequest();
-        if ((int)$request->getParam('store') === 1 || $request->getParam('scope') === 'stores') {
-            $scope = 'stores';
-        } elseif ((int)$request->getParam('website') === 1) {
-            $scope = 'website';
-        } else {
-            $scope = 'default';
+        $store = $request->getParam('store');
+        $website = $request->getParam('website');
+        $scope = $request->getParam('scope');
+
+        if ($store || $scope === 'stores') {
+            return 'stores';
         }
-        return $scope;
+        if ($website || $scope === 'websites') {
+            return 'website';
+        }
+        return 'default';
     }
 
     /**

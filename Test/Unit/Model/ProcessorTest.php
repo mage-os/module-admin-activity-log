@@ -15,7 +15,9 @@ namespace MageOS\AdminActivityLog\Test\Unit\Model;
 
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\DataObject;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
@@ -206,12 +208,27 @@ class ProcessorTest extends TestCase
         ];
     }
 
-    public function testGetScopeReturnsStoresWhenStoreParamIsOne(): void
+    public function testGetScopeReturnsStoresWhenStoreParamIsNumeric(): void
     {
         $this->request
             ->method('getParam')
             ->willReturnMap([
-                ['store', null, 1],
+                ['store', null, 5],
+                ['website', null, null],
+                ['scope', null, null]
+            ]);
+
+        $result = $this->processor->getScope();
+
+        $this->assertSame('stores', $result);
+    }
+
+    public function testGetScopeReturnsStoresWhenStoreParamIsStringCode(): void
+    {
+        $this->request
+            ->method('getParam')
+            ->willReturnMap([
+                ['store', null, 'default'],
                 ['website', null, null],
                 ['scope', null, null]
             ]);
@@ -226,7 +243,7 @@ class ProcessorTest extends TestCase
         $this->request
             ->method('getParam')
             ->willReturnMap([
-                ['store', null, 0],
+                ['store', null, null],
                 ['website', null, null],
                 ['scope', null, 'stores']
             ]);
@@ -236,14 +253,29 @@ class ProcessorTest extends TestCase
         $this->assertSame('stores', $result);
     }
 
-    public function testGetScopeReturnsWebsiteWhenWebsiteParamIsOne(): void
+    public function testGetScopeReturnsWebsiteWhenWebsiteParamIsNumeric(): void
     {
         $this->request
             ->method('getParam')
             ->willReturnMap([
-                ['store', null, 0],
-                ['website', null, 1],
+                ['store', null, null],
+                ['website', null, 2],
                 ['scope', null, null]
+            ]);
+
+        $result = $this->processor->getScope();
+
+        $this->assertSame('website', $result);
+    }
+
+    public function testGetScopeReturnsWebsiteWhenScopeIsWebsites(): void
+    {
+        $this->request
+            ->method('getParam')
+            ->willReturnMap([
+                ['store', null, null],
+                ['website', null, null],
+                ['scope', null, 'websites']
             ]);
 
         $result = $this->processor->getScope();
@@ -421,5 +453,22 @@ class ProcessorTest extends TestCase
                 'expected' => '::1'
             ],
         ];
+    }
+
+    public function testGetStoreIdFallsBackToStoreManagerWhenStoreIdIsEmptyArray(): void
+    {
+        $model = new DataObject(['store_id' => []]);
+
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn(7);
+
+        $this->storeManager
+            ->expects($this->once())
+            ->method('getStore')
+            ->willReturn($storeMock);
+
+        $result = $this->processor->getStoreId($model);
+
+        $this->assertSame(7, $result);
     }
 }
