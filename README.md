@@ -17,7 +17,6 @@ fork of the original [Magento Admin Activity Log](https://github.com/kiwicommerc
 - **Field-Level Changes**: Track specific field modifications with before/after values
 - **IP Address Logging**: Capture IP addresses and user agent information for security analysis
 - **Extensible Configuration**: Customize tracked entities and skip fields via XML configuration
-- **Revert Capability**: Restore previous values for supported entity types with a secure model allowlist
 
 ## 📋 Requirements
 
@@ -66,7 +65,7 @@ The module is built around interface-driven services for clean extensibility:
 |-----------|-------------|
 | `ActivityConfigInterface` | Configuration settings (enabled state, log retention) |
 | `FieldTrackerInterface` | Tracks field-level changes with before/after values |
-| `ModelResolverInterface` | Resolves and loads models for revert operations |
+| `ModelResolverInterface` | Resolves and loads models for activity logging |
 | `ActivityRepositoryInterface` | CRUD operations for activity log entries |
 | `LoginRepositoryInterface` | CRUD operations for login log entries |
 
@@ -113,20 +112,6 @@ Example configuration to add a custom entity:
 
 To exclude specific fields from being logged (e.g., timestamps, internal IDs), add them to the `skip_fields` node for the relevant module in your `adminactivity.xml`.
 
-### Extending the Revert Model Allowlist
-
-The revert feature uses a security allowlist to prevent instantiation of arbitrary model classes. To enable revert for custom entities, add your model classes to the allowlist via `di.xml`:
-
-```xml
-<type name="MageOS\AdminActivityLog\Model\ModelResolver">
-    <arguments>
-        <argument name="allowedModelClasses" xsi:type="array">
-            <item name="my_custom_entity" xsi:type="string">Vendor\Module\Model\CustomEntity</item>
-        </argument>
-    </arguments>
-</type>
-```
-
 ### Protected Fields
 
 Sensitive fields (passwords, tokens, payment data) are automatically excluded from logging. To add custom protected fields:
@@ -143,9 +128,9 @@ Sensitive fields (passwords, tokens, payment data) are automatically excluded fr
 
 ## Security
 
-- **Revert Allowlist**: Only explicitly allowed model classes can be instantiated during revert operations, preventing arbitrary code execution.
+- **Model Allowlist**: Only explicitly allowed model classes can be loaded during activity logging, preventing arbitrary class instantiation.
 - **Protected Fields**: Sensitive data (passwords, API keys, tokens, payment info) is never logged, configured via DI.
-- **ACL Permissions**: Control access to logs and revert operations via permission rules.
+- **ACL Permissions**: Control access to activity logs via permission rules.
 - **CSRF Protection**: All admin actions are protected with form keys.
 
 ## Performance Notes

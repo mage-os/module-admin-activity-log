@@ -15,7 +15,6 @@ namespace MageOS\AdminActivityLog\Api;
 
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\Data\ActivityInterface;
-use MageOS\AdminActivityLog\Api\Data\ActivityLogDetailInterface;
 use MageOS\AdminActivityLog\Model\ResourceModel\Activity\Collection;
 use MageOS\AdminActivityLog\Model\ResourceModel\ActivityLog\Collection as ActivityLogCollection;
 
@@ -50,28 +49,12 @@ interface ActivityRepositoryInterface
     public function deleteActivityById(int $activityId): void;
 
     /**
-     * Get activity detail by activity ID
-     *
-     * @param int $activityId
-     * @return ActivityLogDetailInterface
-     */
-    public function getActivityDetail(int $activityId): ActivityLogDetailInterface;
-
-    /**
      * Get activity log collection by activity ID
      *
      * @param int $activityId
      * @return ActivityLogCollection
      */
     public function getActivityLog(int $activityId): ActivityLogCollection;
-
-    /**
-     * Revert changes made in the specified activity
-     *
-     * @param ActivityInterface $activity
-     * @return bool
-     */
-    public function revertActivity(ActivityInterface $activity): bool;
 
     /**
      * Get old data for a model before changes were made

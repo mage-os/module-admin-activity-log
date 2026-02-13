@@ -14,13 +14,10 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Test\Unit\Model;
 
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
-use MageOS\AdminActivityLog\Api\FieldCheckerInterface;
 use MageOS\AdminActivityLog\Api\ModelResolverInterface;
 use MageOS\AdminActivityLog\Model\Activity;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
-use MageOS\AdminActivityLog\Model\Activity\ThemeConfig;
 use MageOS\AdminActivityLog\Model\ActivityFactory;
-use MageOS\AdminActivityLog\Model\ActivityLogDetailFactory;
 use MageOS\AdminActivityLog\Model\ActivityLogFactory;
 use MageOS\AdminActivityLog\Model\ActivityRepository;
 use MageOS\AdminActivityLog\Model\ResourceModel\Activity\Collection as ActivityCollection;
@@ -34,13 +31,10 @@ class ActivityRepositoryTest extends TestCase
 {
     private ActivityFactory&MockObject $activityFactory;
     private ActivityCollectionFactory&MockObject $collectionFactory;
-    private ActivityLogDetailFactory&MockObject $activityLogDetailFactory;
     private ActivityLogFactory&MockObject $activityLogFactory;
     private LogCollectionFactory&MockObject $logCollectionFactory;
     private SystemConfig&MockObject $systemConfig;
-    private ThemeConfig&MockObject $themeConfig;
     private ModelResolverInterface&MockObject $modelResolver;
-    private FieldCheckerInterface&MockObject $protectedFieldChecker;
     private ActivityConfigInterface&MockObject $activityConfig;
     private ActivityRepository $repository;
 
@@ -48,74 +42,21 @@ class ActivityRepositoryTest extends TestCase
     {
         $this->activityFactory = $this->createMock(ActivityFactory::class);
         $this->collectionFactory = $this->createMock(ActivityCollectionFactory::class);
-        $this->activityLogDetailFactory = $this->createMock(ActivityLogDetailFactory::class);
         $this->activityLogFactory = $this->createMock(ActivityLogFactory::class);
         $this->logCollectionFactory = $this->createMock(LogCollectionFactory::class);
         $this->systemConfig = $this->createMock(SystemConfig::class);
-        $this->themeConfig = $this->createMock(ThemeConfig::class);
         $this->modelResolver = $this->createMock(ModelResolverInterface::class);
-        $this->protectedFieldChecker = $this->createMock(FieldCheckerInterface::class);
         $this->activityConfig = $this->createMock(ActivityConfigInterface::class);
 
         $this->repository = new ActivityRepository(
             $this->activityFactory,
             $this->collectionFactory,
-            $this->activityLogDetailFactory,
             $this->activityLogFactory,
             $this->logCollectionFactory,
             $this->systemConfig,
-            $this->themeConfig,
             $this->modelResolver,
-            $this->protectedFieldChecker,
             $this->activityConfig
         );
-    }
-
-    /**
-     * @dataProvider getMethodNameDataProvider
-     */
-    public function testGetMethodName(string $field, string $expected): void
-    {
-        $result = $this->repository->getMethodName($field);
-
-        $this->assertSame($expected, $result);
-    }
-
-    /**
-     * @return array<string, array{field: string, expected: string}>
-     */
-    public static function getMethodNameDataProvider(): array
-    {
-        return [
-            'simple field' => [
-                'field' => 'name',
-                'expected' => 'Name'
-            ],
-            'underscore field' => [
-                'field' => 'first_name',
-                'expected' => 'FirstName'
-            ],
-            'multiple underscores' => [
-                'field' => 'customer_group_id',
-                'expected' => 'CustomerGroupId'
-            ],
-            'uppercase field' => [
-                'field' => 'NAME',
-                'expected' => 'Name'
-            ],
-            'mixed case field' => [
-                'field' => 'FiRsT_nAmE',
-                'expected' => 'FirstName'
-            ],
-            'single letter segments' => [
-                'field' => 'a_b_c',
-                'expected' => 'ABC'
-            ],
-            'trailing underscore' => [
-                'field' => 'field_name_',
-                'expected' => 'FieldName'
-            ],
-        ];
     }
 
     public function testGetListReturnsCollection(): void

@@ -18,7 +18,7 @@ use MageOS\AdminActivityLog\Api\FieldCheckerInterface;
 class FieldChecker implements FieldCheckerInterface
 {
     /**
-     * @param string[] $protectedFields Sensitive fields that should never be logged or reverted
+     * @param string[] $protectedFields Sensitive fields that should never be logged
      */
     public function __construct(
         protected readonly array $protectedFields = []

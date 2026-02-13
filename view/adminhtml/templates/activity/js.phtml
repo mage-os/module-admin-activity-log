@@ -29,7 +29,7 @@ $script = <<<JS
             overlayHideEffectOptions: null,
             modal: null,
             activityId: 0,
-            open: function (editorUrl, elementId, revertable) {
+            open: function (editorUrl, elementId) {
                 if (editorUrl && elementId) {
                     jQuery.ajax({
                         url: editorUrl,
@@ -39,7 +39,7 @@ $script = <<<JS
                         showLoader: true,
                         dataType: 'html',
                         success: (data) => {
-                            this.openDialogWindow(data, elementId, revertable);
+                            this.openDialogWindow(data, elementId);
                         },
                         error: (xhr, status, error) => {
                             this.error('Failed to load activity log: ' + error);
@@ -47,7 +47,7 @@ $script = <<<JS
                     });
                 }
             },
-            openDialogWindow: function (data, elementId, revertable) {
+            openDialogWindow: function (data, elementId) {
                 let self = this;
                 this.activityId = elementId;
                 if (this.modal) {
@@ -64,48 +64,14 @@ $script = <<<JS
                             click: function() {
                                 self.closeDialogWindow(this);
                             }
-                        }, {
-                            text: jQuery.mage.__('Revert'),
-                            class: 'action- scalable action-primary action-revert-activity',
-                            click: function() {
-                                self.revertDialogWindow(this);
-                            }
                         }],
                         close: function() {
                             self.closeDialogWindow(this);
                         }
                     });
                 }
-                if (!!revertable) {
-                    jQuery(".action-revert-activity").show();
-                } else {
-                    jQuery(".action-revert-activity").hide();
-                }
                 this.modal.modal('openModal');
                 this.autoResize();
-            },
-            revertDialogWindow: function (dialogWindow) {
-                jQuery.ajax({
-                    type: 'POST',
-                    url: '{$escaper->escapeUrl($block->getRevertUrl())}',
-                    data: {
-                        id: this.activityId,
-                        form_key: '{$escaper->escapeJs($block->getFormKey())}'
-                    },
-                    dataType: 'json',
-                    showLoader: true,
-                    success: (data) => {
-                        if (!data.error) {
-                            this.closeDialogWindow(dialogWindow);
-                            window.location.reload();
-                        } else {
-                            this.error(data.message);
-                        }
-                    },
-                    error: (xhr, status, error) => {
-                        this.error('Failed to revert activity: ' + error);
-                    }
-                });
             },
             closeDialogWindow: function (dialogWindow) {
                 jQuery('body').trigger('processStop');

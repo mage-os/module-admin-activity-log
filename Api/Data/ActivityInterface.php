@@ -34,8 +34,6 @@ interface ActivityInterface
     public const ITEM_NAME = 'item_name';
     public const ITEM_PATH = 'item_path';
     public const ITEM_URL = 'item_url';
-    public const IS_REVERTABLE = 'is_revertable';
-    public const REVERT_BY = 'revert_by';
     public const CREATED_AT = 'created_at';
     public const UPDATED_AT = 'updated_at';
 
@@ -94,14 +92,6 @@ interface ActivityInterface
     public function getItemUrl(): ?string;
 
     public function setItemUrl(?string $itemUrl): self;
-
-    public function isRevertable(): ?bool;
-
-    public function setIsRevertable(?bool $isRevertable): self;
-
-    public function getRevertBy(): ?string;
-
-    public function setRevertBy(?string $revertBy): self;
 
     public function getCreatedAt(): string;
 

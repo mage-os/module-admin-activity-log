@@ -64,7 +64,6 @@ class ViewAction extends Column
                 }
                 if (isset($item['entity_id'])) {
                     $entityId = (string)$item['entity_id'];
-                    $isRevertable = $item['is_revertable'] ? 'true' : 'false';
                     $item[$columnName] = $this->layout->createBlock(
                         Button::class,
                         '',
@@ -76,7 +75,7 @@ class ViewAction extends Column
                                 'class' => 'action-activity-log-view',
                                 'onclick' => 'adminActivityLogView.open(\''
                                     . $this->getViewUrl() . '\', \'' . $entityId
-                                    . '\', ' . $isRevertable . ')',
+                                    . '\')',
                             ]
                         ]
                     )->toHtml();

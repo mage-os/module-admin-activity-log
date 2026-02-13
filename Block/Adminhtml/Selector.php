@@ -21,11 +21,4 @@ use Magento\Backend\Block\Template;
  */
 class Selector extends Template
 {
-    /**
-     * Revert Activity Log action URL
-     */
-    public function getRevertUrl(): string
-    {
-        return $this->getUrl('adminactivity/activity/revert');
-    }
 }

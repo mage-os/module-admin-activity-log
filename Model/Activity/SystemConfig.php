@@ -16,8 +16,6 @@ namespace MageOS\AdminActivityLog\Model\Activity;
 use Magento\Config\Model\Config\Structure;
 use Magento\Config\Model\Config\Structure\Element\Group;
 use Magento\Config\Model\Config\Structure\Element\Section;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\Config\ValueFactory;
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
@@ -33,7 +31,6 @@ class SystemConfig implements ModelInterface
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ValueFactory $valueFactory,
-        protected readonly WriterInterface $configWriter,
         private readonly Structure $configStructure
     ) {
     }
@@ -165,27 +162,6 @@ class SystemConfig implements ModelInterface
         }
 
         return $logData;
-    }
-
-    /**
-     * Get revert activity data of system config module
-     * @param Iterable $logData
-     * @param mixed $scopeId
-     * @return bool
-     */
-    public function revertData($logData, $scopeId): bool
-    {
-        if (!empty($logData)) {
-            foreach ($logData as $log) {
-                $this->configWriter->save(
-                    $log->getFieldName(),
-                    $log->getOldValue(),
-                    ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-                    $scopeId
-                );
-            }
-        }
-        return true;
     }
 
     /**
