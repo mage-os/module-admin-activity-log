@@ -17,6 +17,7 @@ use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
 use MageOS\AdminActivityLog\Api\Data\ActivityInterface;
+use MageOS\AdminActivityLog\Api\Data\ActivityLogDetailInterface;
 use MageOS\AdminActivityLog\Api\ModelResolverInterface;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
 use MageOS\AdminActivityLog\Model\ResourceModel\Activity\Collection as ActivityCollection;
@@ -31,6 +32,7 @@ class ActivityRepository implements ActivityRepositoryInterface
     public function __construct(
         protected readonly ActivityFactory $activityFactory,
         protected readonly ResourceModel\Activity\CollectionFactory $collectionFactory,
+        protected readonly ActivityLogDetailFactory $activityLogDetailFactory,
         protected readonly ActivityLogFactory $activityLogFactory,
         protected readonly CollectionFactory $logCollectionFactory,
         protected readonly SystemConfig $systemConfig,
@@ -65,6 +67,15 @@ class ActivityRepository implements ActivityRepositoryInterface
         $model = $this->activityFactory->create();
         $model->load($activityId);
         $model->delete();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getActivityDetail(int $activityId): ActivityLogDetailInterface
+    {
+        return $this->activityLogDetailFactory->create()
+            ->load($activityId, 'activity_id');
     }
 
     /**

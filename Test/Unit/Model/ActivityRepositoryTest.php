@@ -18,6 +18,7 @@ use MageOS\AdminActivityLog\Api\ModelResolverInterface;
 use MageOS\AdminActivityLog\Model\Activity;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
 use MageOS\AdminActivityLog\Model\ActivityFactory;
+use MageOS\AdminActivityLog\Model\ActivityLogDetailFactory;
 use MageOS\AdminActivityLog\Model\ActivityLogFactory;
 use MageOS\AdminActivityLog\Model\ActivityRepository;
 use MageOS\AdminActivityLog\Model\ResourceModel\Activity\Collection as ActivityCollection;
@@ -31,6 +32,7 @@ class ActivityRepositoryTest extends TestCase
 {
     private ActivityFactory&MockObject $activityFactory;
     private ActivityCollectionFactory&MockObject $collectionFactory;
+    private ActivityLogDetailFactory&MockObject $activityLogDetailFactory;
     private ActivityLogFactory&MockObject $activityLogFactory;
     private LogCollectionFactory&MockObject $logCollectionFactory;
     private SystemConfig&MockObject $systemConfig;
@@ -42,6 +44,7 @@ class ActivityRepositoryTest extends TestCase
     {
         $this->activityFactory = $this->createMock(ActivityFactory::class);
         $this->collectionFactory = $this->createMock(ActivityCollectionFactory::class);
+        $this->activityLogDetailFactory = $this->createMock(ActivityLogDetailFactory::class);
         $this->activityLogFactory = $this->createMock(ActivityLogFactory::class);
         $this->logCollectionFactory = $this->createMock(LogCollectionFactory::class);
         $this->systemConfig = $this->createMock(SystemConfig::class);
@@ -51,6 +54,7 @@ class ActivityRepositoryTest extends TestCase
         $this->repository = new ActivityRepository(
             $this->activityFactory,
             $this->collectionFactory,
+            $this->activityLogDetailFactory,
             $this->activityLogFactory,
             $this->logCollectionFactory,
             $this->systemConfig,

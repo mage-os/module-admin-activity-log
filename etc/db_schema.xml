@@ -63,6 +63,26 @@
         </index>
     </table>
 
+    <!-- Activity detail table recording which entity was affected -->
+    <table name="admin_activity_detail" resource="default" engine="innodb">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Primary key for the Table"/>
+        <column xsi:type="int" name="activity_id" unsigned="true" nullable="false" comment="Entity id of admin_activity table"/>
+        <column xsi:type="varchar" name="model_class" nullable="false" length="255" default="" comment="Fully qualified class name of the affected model"/>
+        <column xsi:type="int" name="item_id" nullable="true" comment="ID of the item being modified"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+
+        <constraint xsi:type="foreign" referenceId="ADMIN_ACTIVITY_DETAIL_ACTIVITY_ID_ADMIN_ACTIVITY_ENTITY_ID"
+                    table="admin_activity_detail" column="activity_id"
+                    referenceTable="admin_activity" referenceColumn="entity_id" onDelete="CASCADE"/>
+
+        <index referenceId="ADMIN_ACTIVITY_DETAIL_ACTIVITY_ID" indexType="btree">
+            <column name="activity_id"/>
+        </index>
+    </table>
+
     <!-- Login activity table for tracking login/logout -->
     <table name="admin_login_log" resource="default" engine="innodb">
         <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Primary key for the table"/>

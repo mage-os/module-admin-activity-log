@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace MageOS\AdminActivityLog\Model;
 
+use Exception;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
@@ -216,9 +217,11 @@ class Processor
      */
     public function addLog($activity, $logData, $model): void
     {
+        $logDetail = $this->initActivityDetail($model);
         $this->activityLogs[] = [
             Activity::class => $activity,
             ActivityLog::class => $logData,
+            ActivityLogDetail::class => $logDetail
         ];
     }
 
@@ -247,6 +250,13 @@ class Processor
                 // Batch insert activity logs (field-level changes)
                 if (isset($model[ActivityLog::class]) && !empty($model[ActivityLog::class])) {
                     $this->batchInsertActivityLogs($model[ActivityLog::class], $activityId);
+                }
+
+                // Insert activity detail (entity metadata)
+                if (isset($model[ActivityLogDetail::class])) {
+                    $detail = $model[ActivityLogDetail::class];
+                    $detail->setActivityId($activityId);
+                    $detail->save();
                 }
             }
 
@@ -380,6 +390,18 @@ class Processor
         $activity->setItemUrl($this->getEditUrl($model));
 
         return $activity;
+    }
+
+    /**
+     * Create activity detail record for entity metadata
+     * @param $model
+     * @return mixed
+     */
+    public function initActivityDetail($model)
+    {
+        return $this->activityContext->createActivityDetail()
+            ->setModelClass((string)$model::class)
+            ->setItemId((int)$model->getId());
     }
 
     /**

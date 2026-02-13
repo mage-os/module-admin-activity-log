@@ -55,25 +55,4 @@ class ActivityLogDetail extends AbstractModel implements ActivityLogDetailInterf
     {
         return $this->setData(self::ITEM_ID, $itemId);
     }
-
-    public function getStatus(): string
-    {
-        return (string)$this->getData(self::STATUS);
-    }
-
-    public function setStatus(string $status): ActivityLogDetailInterface
-    {
-        return $this->setData(self::STATUS, $status);
-    }
-
-    public function getResponse(): ?string
-    {
-        $value = $this->getData(self::RESPONSE);
-        return $value === null ? null : (string)$value;
-    }
-
-    public function setResponse(?string $response): ActivityLogDetailInterface
-    {
-        return $this->setData(self::RESPONSE, $response);
-    }
 }

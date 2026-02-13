@@ -46,6 +46,21 @@
             "ADMIN_ACTIVITY_LOG_ACTIVITY_ID_ADMIN_ACTIVITY_ENTITY_ID": true
         }
     },
+    "admin_activity_detail": {
+        "column": {
+            "entity_id": true,
+            "activity_id": true,
+            "model_class": true,
+            "item_id": true
+        },
+        "index": {
+            "ADMIN_ACTIVITY_DETAIL_ACTIVITY_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "ADMIN_ACTIVITY_DETAIL_ACTIVITY_ID_ADMIN_ACTIVITY_ENTITY_ID": true
+        }
+    },
     "admin_login_log": {
         "column": {
             "entity_id": true,
