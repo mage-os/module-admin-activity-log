@@ -137,13 +137,17 @@ class ActivityRepository implements ActivityRepositoryInterface
 
         if ($model->getId()) {
             foreach ($logData as $log) {
-                if ($this->protectedFieldChecker->isFieldProtected($log->getFieldName())) {
+                $fieldName = $log->getFieldName();
+                if ($this->protectedFieldChecker->isFieldProtected($fieldName)) {
                     continue;
                 }
-                if ($log->getFieldName() === self::QTY_FIELD) {
+                if (!preg_match('/^[a-z][a-z0-9_]{0,254}$/i', $fieldName)) {
+                    continue;
+                }
+                if ($fieldName === self::QTY_FIELD) {
                     $model->setStockData(['qty' => $log->getOldValue()]);
                 }
-                $method = 'set' . $this->getMethodName($log->getFieldName());
+                $method = 'set' . $this->getMethodName($fieldName);
                 $model->{$method}($log->getOldValue());
             }
 

@@ -508,7 +508,7 @@ class Processor
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            $result['message'] = $e->getMessage();
+            $result['message'] = (string)__('An error occurred while reverting the activity. Please check the system logs.');
             $this->activityContext->getStatus()->markFail($activityId);
         }
 

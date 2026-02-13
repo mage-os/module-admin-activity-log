@@ -96,18 +96,40 @@ class ActivityConfig implements ActivityConfigInterface
     }
 
     /**
+     * Map of allowed constant names to their configuration paths.
+     */
+    private const CONFIG_PATH_MAP = [
+        'ACTIVITY_ENABLE' => self::ACTIVITY_ENABLE,
+        'LOGIN_ACTIVITY_ENABLE' => self::LOGIN_ACTIVITY_ENABLE,
+        'PAGE_VISIT_ENABLE' => self::PAGE_VISIT_ENABLE,
+        'CLEAR_LOG_DAYS' => self::CLEAR_LOG_DAYS,
+        'MODULE_ORDER' => self::MODULE_ORDER,
+        'MODULE_PRODUCT' => self::MODULE_PRODUCT,
+        'MODULE_CATEGORY' => self::MODULE_CATEGORY,
+        'MODULE_CUSTOMER' => self::MODULE_CUSTOMER,
+        'MODULE_PROMOTION' => self::MODULE_PROMOTION,
+        'MODULE_EMAIL' => self::MODULE_EMAIL,
+        'MODULE_PAGE' => self::MODULE_PAGE,
+        'MODULE_BLOCK' => self::MODULE_BLOCK,
+        'MODULE_WIDGET' => self::MODULE_WIDGET,
+        'MODULE_THEME' => self::MODULE_THEME,
+        'MODULE_SYSTEM_CONFIG' => self::MODULE_SYSTEM_CONFIG,
+        'MODULE_ATTRIBUTE' => self::MODULE_ATTRIBUTE,
+        'MODULE_ADMIN_USER' => self::MODULE_ADMIN_USER,
+        'MODULE_SEO' => self::MODULE_SEO,
+    ];
+
+    /**
      * @inheritDoc
      */
     public function getConfigValue(string $constantName): mixed
     {
-        $constantFqn = 'self::' . $constantName;
-
-        if (!defined($constantFqn)) {
+        if (!isset(self::CONFIG_PATH_MAP[$constantName])) {
             return false;
         }
 
         $value = $this->scopeConfig->getValue(
-            constant($constantFqn),
+            self::CONFIG_PATH_MAP[$constantName],
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT
         );
 

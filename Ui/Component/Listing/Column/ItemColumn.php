@@ -139,6 +139,9 @@ class ItemColumn extends Column
                 [$field => $id]
             );
         }
+        if (count($parts) < 5) {
+            return '';
+        }
         [$module, $controller, $action, $field, $id] = $parts;
 
         return $this->backendUrl->getUrl(

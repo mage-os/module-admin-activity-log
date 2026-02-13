@@ -22,14 +22,8 @@ use Magento\User\Model\ResourceModel\User;
  */
 class DeletePlugin
 {
-    public function aroundDelete(User $subject, callable $proceed, AbstractModel $user): bool
+    public function beforeDelete(User $subject, AbstractModel $user): void
     {
         $user->load($user->getId());
-
-        /** @var bool $result */
-        $result = $proceed($user);
-        $user->afterDelete();
-
-        return $result;
     }
 }

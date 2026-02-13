@@ -124,7 +124,7 @@ class PostDispatch
                 $log->setItemUrl($processor->getEditUrl($model));
 
                 $logData = $processor->getHandler()->initLog($this->getProductAttributes($model));
-                $logDetail = $processor->_initActivityDetail($model);
+                $logDetail = $processor->initActivityDetail($model);
 
                 $processor->addActivityLog([
                     Activity::class => $log,

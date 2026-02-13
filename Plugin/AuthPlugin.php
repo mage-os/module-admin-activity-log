@@ -30,15 +30,13 @@ class AuthPlugin
     }
 
     /**
-     * Track admin logout activity
+     * Track admin logout activity before session is destroyed
      */
-    public function aroundLogout(Auth $auth, callable $proceed): void
+    public function beforeLogout(Auth $auth): void
     {
         if ($this->activityConfig->isLoginEnabled()) {
             $user = $auth->getAuthStorage()->getUser();
             $this->loginRepository->setUser($user)->addLogoutLog();
         }
-
-        $proceed();
     }
 }
