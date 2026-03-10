@@ -15,11 +15,9 @@ namespace MageOS\AdminActivityLog\Model\Activity;
 
 use Magento\Config\Model\ResourceModel\Config\Data\Collection as ConfigCollection;
 use Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory as ConfigCollectionFactory;
-use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
-use MageOS\AdminActivityLog\Model\ResourceModel\ActivityLog\Collection;
 
 /**
  * Class ThemeConfig
@@ -30,8 +28,7 @@ class ThemeConfig implements ModelInterface
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ConfigCollectionFactory $configCollectionFactory,
-        protected readonly RequestInterface $request,
-        protected readonly WriterInterface $configWriter
+        protected readonly RequestInterface $request
     ) {
     }
 
@@ -88,22 +85,6 @@ class ThemeConfig implements ModelInterface
         $model->setConfig('Theme Configuration');
         $model->setId($path);
         return $result;
-    }
-
-    /**
-     * Get revert activity data of theme configuration
-     */
-    public function revertData(Collection $logData, int|string $scopeId, string $scope): bool
-    {
-        foreach ($logData as $log) {
-            $this->configWriter->save(
-                $log->getFieldName(),
-                $log->getOldValue(),
-                $scope,
-                $scopeId
-            );
-        }
-        return true;
     }
 
     /**

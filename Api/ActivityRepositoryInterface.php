@@ -66,14 +66,6 @@ interface ActivityRepositoryInterface
     public function getActivityLog(int $activityId): ActivityLogCollection;
 
     /**
-     * Revert changes made in the specified activity
-     *
-     * @param ActivityInterface $activity
-     * @return bool
-     */
-    public function revertActivity(ActivityInterface $activity): bool;
-
-    /**
      * Get old data for a model before changes were made
      *
      * @param DataObject $model

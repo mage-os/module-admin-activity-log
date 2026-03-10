@@ -15,9 +15,9 @@ namespace MageOS\AdminActivityLog\Test\Unit\Model;
 
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\DataObject;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
-use Magento\Framework\Message\ManagerInterface;
-use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
@@ -36,9 +36,7 @@ class ProcessorTest extends TestCase
     private Session&MockObject $authSession;
     private Handler&MockObject $handler;
     private StoreManagerInterface&MockObject $storeManager;
-    private DateTime&MockObject $dateTime;
     private ActivityConfigInterface&MockObject $activityConfig;
-    private ManagerInterface&MockObject $messageManager;
     private PostDispatch&MockObject $postDispatch;
     private SystemConfig&MockObject $systemConfig;
     private RequestContext&MockObject $requestContext;
@@ -53,9 +51,7 @@ class ProcessorTest extends TestCase
         $this->authSession = $this->createMock(Session::class);
         $this->handler = $this->createMock(Handler::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->dateTime = $this->createMock(DateTime::class);
         $this->activityConfig = $this->createMock(ActivityConfigInterface::class);
-        $this->messageManager = $this->createMock(ManagerInterface::class);
         $this->postDispatch = $this->createMock(PostDispatch::class);
         $this->systemConfig = $this->createMock(SystemConfig::class);
 
@@ -76,9 +72,7 @@ class ProcessorTest extends TestCase
             $this->authSession,
             $this->handler,
             $this->storeManager,
-            $this->dateTime,
             $this->activityConfig,
-            $this->messageManager,
             $this->postDispatch,
             $this->systemConfig,
             $this->requestContext,
@@ -186,11 +180,6 @@ class ProcessorTest extends TestCase
                 'fullAction' => 'adminactivity_activity_log',
                 'expected' => false
             ],
-            'skip action - adminactivity_activity_revert' => [
-                'module' => 'adminactivity',
-                'fullAction' => 'adminactivity_activity_revert',
-                'expected' => false
-            ],
             'skip module - mui' => [
                 'module' => 'mui',
                 'fullAction' => 'some_valid_action',
@@ -219,12 +208,27 @@ class ProcessorTest extends TestCase
         ];
     }
 
-    public function testGetScopeReturnsStoresWhenStoreParamIsOne(): void
+    public function testGetScopeReturnsStoresWhenStoreParamIsNumeric(): void
     {
         $this->request
             ->method('getParam')
             ->willReturnMap([
-                ['store', null, 1],
+                ['store', null, 5],
+                ['website', null, null],
+                ['scope', null, null]
+            ]);
+
+        $result = $this->processor->getScope();
+
+        $this->assertSame('stores', $result);
+    }
+
+    public function testGetScopeReturnsStoresWhenStoreParamIsStringCode(): void
+    {
+        $this->request
+            ->method('getParam')
+            ->willReturnMap([
+                ['store', null, 'default'],
                 ['website', null, null],
                 ['scope', null, null]
             ]);
@@ -239,7 +243,7 @@ class ProcessorTest extends TestCase
         $this->request
             ->method('getParam')
             ->willReturnMap([
-                ['store', null, 0],
+                ['store', null, null],
                 ['website', null, null],
                 ['scope', null, 'stores']
             ]);
@@ -249,14 +253,29 @@ class ProcessorTest extends TestCase
         $this->assertSame('stores', $result);
     }
 
-    public function testGetScopeReturnsWebsiteWhenWebsiteParamIsOne(): void
+    public function testGetScopeReturnsWebsiteWhenWebsiteParamIsNumeric(): void
     {
         $this->request
             ->method('getParam')
             ->willReturnMap([
-                ['store', null, 0],
-                ['website', null, 1],
+                ['store', null, null],
+                ['website', null, 2],
                 ['scope', null, null]
+            ]);
+
+        $result = $this->processor->getScope();
+
+        $this->assertSame('website', $result);
+    }
+
+    public function testGetScopeReturnsWebsiteWhenScopeIsWebsites(): void
+    {
+        $this->request
+            ->method('getParam')
+            ->willReturnMap([
+                ['store', null, null],
+                ['website', null, null],
+                ['scope', null, 'websites']
             ]);
 
         $result = $this->processor->getScope();
@@ -434,5 +453,22 @@ class ProcessorTest extends TestCase
                 'expected' => '::1'
             ],
         ];
+    }
+
+    public function testGetStoreIdFallsBackToStoreManagerWhenStoreIdIsEmptyArray(): void
+    {
+        $model = new DataObject(['store_id' => []]);
+
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn(7);
+
+        $this->storeManager
+            ->expects($this->once())
+            ->method('getStore')
+            ->willReturn($storeMock);
+
+        $result = $this->processor->getStoreId($model);
+
+        $this->assertSame(7, $result);
     }
 }

@@ -17,8 +17,6 @@ use Exception;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
-use Magento\Framework\Message\ManagerInterface;
-use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
@@ -35,8 +33,7 @@ class Processor
     public const SKIP_MODULE_ACTIONS = [
         'mui_index_render',
         'adminactivity_activity_index',
-        'adminactivity_activity_log',
-        'adminactivity_activity_revert'
+        'adminactivity_activity_log'
     ];
     public const SKIP_MODULE = [
         'mui'
@@ -67,9 +64,7 @@ class Processor
         protected readonly Session $authSession,
         protected readonly Handler $handler,
         protected readonly StoreManagerInterface $storeManager,
-        protected readonly DateTime $dateTime,
         protected readonly ActivityConfigInterface $activityConfig,
-        protected readonly ManagerInterface $messageManager,
         protected readonly PostDispatch $postDispatch,
         private readonly SystemConfig $systemConfig,
         private readonly RequestContext $requestContext,
@@ -168,7 +163,6 @@ class Processor
             $logData = $this->handler->modelAdd($model, $this->getMethod());
             if (!empty($logData)) {
                 $activity = $this->initActivity($model);
-                $activity->setIsRevertable(false);
 
                 $this->addLog($activity, $logData, $model);
             }
@@ -188,7 +182,6 @@ class Processor
             if (!empty($logData)) {
                 $activity = $this->initActivity($model);
                 $activity->setActionType($label);
-                $activity->setIsRevertable(true);
 
                 $this->addLog($activity, $logData, $model);
             }
@@ -207,8 +200,6 @@ class Processor
             $logData = $this->handler->modelDelete($model, $this->getMethod());
             if (!empty($logData)) {
                 $activity = $this->initActivity($model);
-
-                $activity->setIsRevertable(false);
                 $activity->setItemUrl('');
 
                 $this->addLog($activity, $logData, $model);
@@ -261,7 +252,7 @@ class Processor
                     $this->batchInsertActivityLogs($model[ActivityLog::class], $activityId);
                 }
 
-                // Insert activity detail
+                // Insert activity detail (entity metadata)
                 if (isset($model[ActivityLogDetail::class])) {
                     $detail = $model[ActivityLogDetail::class];
                     $detail->setActivityId($activityId);
@@ -402,18 +393,15 @@ class Processor
     }
 
     /**
-     * Set activity details
+     * Create activity detail record for entity metadata
      * @param $model
      * @return mixed
      */
     public function initActivityDetail($model)
     {
-        $activity = $this->activityContext->createActivityDetail()
+        return $this->activityContext->createActivityDetail()
             ->setModelClass((string)$model::class)
-            ->setItemId((int)$model->getId())
-            ->setStatus('success')
-            ->setResponse('');
-        return $activity;
+            ->setItemId((int)$model->getId());
     }
 
     /**
@@ -447,6 +435,9 @@ class Processor
         if (isset($data['store_id'])) {
             $storeId = $model->getStoreId();
             if (is_array($storeId)) {
+                if (empty($storeId)) {
+                    return (int)$this->storeManager->getStore()->getId();
+                }
                 $storeId = reset($storeId);
             }
 
@@ -462,57 +453,17 @@ class Processor
     public function getScope(): string
     {
         $request = $this->requestContext->getRequest();
-        if ((int)$request->getParam('store') === 1 || $request->getParam('scope') === 'stores') {
-            $scope = 'stores';
-        } elseif ((int)$request->getParam('website') === 1) {
-            $scope = 'website';
-        } else {
-            $scope = 'default';
+        $store = $request->getParam('store');
+        $website = $request->getParam('website');
+        $scope = $request->getParam('scope');
+
+        if ($store || $scope === 'stores') {
+            return 'stores';
         }
-        return $scope;
-    }
-
-    /**
-     * Revert last changes made in module
-     * @return array{
-     *     error: bool,
-     *     message: string|Phrase
-     * }
-     */
-    public function revertActivity(int $activityId): array
-    {
-        $result = [
-            'error' => true,
-            'message' => __('Something went wrong, please try again')
-        ];
-
-        try {
-            $activityModel = $this->activityContext->createActivity()->load($activityId);
-            if ($activityModel->isRevertable() === false && !empty($activityModel->getRevertBy())) {
-                $result['message'] = __('Activity data has already been reverted');
-            } else {
-                $activityRepository = $this->activityContext->getActivityRepository();
-                if ((int)$activityModel->getId() !== 0 && $activityRepository->revertActivity($activityModel)) {
-                    $activityModel->setRevertBy($this->authSession->getUser()->getUsername());
-                    $activityModel->setUpdatedAt($this->dateTime->gmtDate());
-                    $activityModel->save();
-
-                    $result['error'] = false;
-                    $this->activityContext->getStatus()->markSuccess($activityId);
-                    $this->messageManager->addSuccessMessage(__('Activity data has been reverted successfully'));
-                }
-            }
-        } catch (Exception $e) {
-            $this->activityContext->getLogger()->error('Failed to revert admin activity', [
-                'activity_id' => $activityId,
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            $result['message'] = (string)__('An error occurred while reverting the activity. Please check the system logs.');
-            $this->activityContext->getStatus()->markFail($activityId);
+        if ($website || $scope === 'websites') {
+            return 'website';
         }
-
-        return $result;
+        return 'default';
     }
 
     /**
@@ -560,7 +511,6 @@ class Processor
             $activity = $this->initLog();
 
             $activity->setActionType('view');
-            $activity->setIsRevertable(false);
 
             if (!$activity->getModule()) {
                 $activity->setModule($this->escapeString($module));

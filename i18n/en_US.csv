@@ -4,8 +4,6 @@
 "System Configuration","System Configuration"
 actions,actions
 "Something went wrong, please try again","Something went wrong, please try again"
-"Activity data has already been reverted","Activity data has already been reverted"
-"Activity data has been reverted successfully","Activity data has been reverted successfully"
 Success,Success
 Failed,Failed
 Login,Login
@@ -31,7 +29,6 @@ Protected,Protected
 "No field changes recorded for this activity.","No field changes recorded for this activity."
 "Activity Log","Activity Log"
 Back,Back
-Revert,Revert
 New,New
 Edit,Edit
 Delete,Delete

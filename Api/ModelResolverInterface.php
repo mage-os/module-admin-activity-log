@@ -55,7 +55,7 @@ interface ModelResolverInterface
      * Check if a class name is in the allowed model classes list
      *
      * This provides an additional security layer to prevent instantiation
-     * of arbitrary model classes during revert operations.
+     * of arbitrary model classes during model loading operations.
      *
      * @param string $className Fully qualified class name
      * @return bool

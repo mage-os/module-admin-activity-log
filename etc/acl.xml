@@ -24,9 +24,7 @@
                 </resource>
                 <resource id="Magento_Backend::system">
                     <resource id="MageOS_AdminActivityLog::activity_head" title="Admin Activity" sortOrder="100" >
-                        <resource id="MageOS_AdminActivityLog::activity" title="View" sortOrder="10">
-                            <resource id="MageOS_AdminActivityLog::activity_revert" title="Revert Changes" sortOrder="10" />
-                        </resource>
+                        <resource id="MageOS_AdminActivityLog::activity" title="View" sortOrder="10" />
                         <resource id="MageOS_AdminActivityLog::login_activity" title="Login Activity" sortOrder="20" />
                         <resource id="MageOS_AdminActivityLog::configuration" title="Settings" sortOrder="40" />
                     </resource>

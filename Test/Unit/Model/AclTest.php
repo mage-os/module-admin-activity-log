@@ -26,7 +26,6 @@ class AclTest extends TestCase
     public const ACL_ACTIVITY_CONFIG = 'MageOS_AdminActivityLog::activityConfig';
     public const ACL_ACTIVITY_HEAD = 'MageOS_AdminActivityLog::activity_head';
     public const ACL_ACTIVITY = 'MageOS_AdminActivityLog::activity';
-    public const ACL_ACTIVITY_REVERT = 'MageOS_AdminActivityLog::activity_revert';
     public const ACL_LOGIN_ACTIVITY = 'MageOS_AdminActivityLog::login_activity';
     public const ACL_CONFIGURATION = 'MageOS_AdminActivityLog::configuration';
 
@@ -77,14 +76,6 @@ class AclTest extends TestCase
         $this->assertEquals('10', (string)$resource['sortOrder']);
     }
 
-    public function testActivityRevertResourceExists(): void
-    {
-        $resource = $this->findResourceById(self::ACL_ACTIVITY_REVERT);
-
-        $this->assertNotNull($resource, 'Activity revert ACL resource must exist');
-        $this->assertEquals('Revert Changes', (string)$resource['title']);
-    }
-
     public function testLoginActivityResourceExists(): void
     {
         $resource = $this->findResourceById(self::ACL_LOGIN_ACTIVITY);
@@ -101,15 +92,6 @@ class AclTest extends TestCase
         $this->assertNotNull($resource, 'Configuration ACL resource must exist');
         $this->assertEquals('Settings', (string)$resource['title']);
         $this->assertEquals('40', (string)$resource['sortOrder']);
-    }
-
-    public function testActivityRevertIsChildOfActivity(): void
-    {
-        $activityResource = $this->findResourceById(self::ACL_ACTIVITY);
-        $this->assertNotNull($activityResource);
-
-        $revertResource = $activityResource->xpath(".//resource[@id='" . self::ACL_ACTIVITY_REVERT . "']");
-        $this->assertNotEmpty($revertResource, 'Revert resource must be child of activity resource');
     }
 
     public function testActivityConfigIsUnderSystemConfiguration(): void

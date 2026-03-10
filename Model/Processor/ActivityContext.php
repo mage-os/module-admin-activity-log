@@ -13,9 +13,7 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Model\Processor;
 
 use Magento\Framework\App\ResourceConnection;
-use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
 use MageOS\AdminActivityLog\Model\Activity;
-use MageOS\AdminActivityLog\Model\Activity\Status;
 use MageOS\AdminActivityLog\Model\ActivityFactory;
 use MageOS\AdminActivityLog\Model\ActivityLogDetail;
 use MageOS\AdminActivityLog\Model\ActivityLogDetailFactory;
@@ -32,8 +30,6 @@ class ActivityContext
     public function __construct(
         private readonly ActivityFactory $activityFactory,
         private readonly ActivityLogDetailFactory $activityDetailFactory,
-        private readonly ActivityRepositoryInterface $activityRepository,
-        private readonly Status $status,
         private readonly LoggerInterface $logger,
         private readonly ResourceConnection $resourceConnection
     ) {
@@ -47,16 +43,6 @@ class ActivityContext
     public function createActivityDetail(): ActivityLogDetail
     {
         return $this->activityDetailFactory->create();
-    }
-
-    public function getActivityRepository(): ActivityRepositoryInterface
-    {
-        return $this->activityRepository;
-    }
-
-    public function getStatus(): Status
-    {
-        return $this->status;
     }
 
     public function getLogger(): LoggerInterface

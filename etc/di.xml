@@ -31,7 +31,7 @@
     <!-- Field tracking service -->
     <preference for="MageOS\AdminActivityLog\Api\FieldTrackerInterface" type="MageOS\AdminActivityLog\Model\Activity\FieldTracker" />
 
-    <!-- Allowed model classes for revert operations (security allowlist) -->
+    <!-- Allowed model classes for activity logging operations (security allowlist) -->
     <type name="MageOS\AdminActivityLog\Model\ModelResolver">
         <arguments>
             <argument name="allowedModelClasses" xsi:type="array">

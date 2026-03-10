@@ -16,8 +16,6 @@
             "item_name": true,
             "item_url": true,
             "item_path": true,
-            "is_revertable": true,
-            "revert_by": true,
             "created_at": true,
             "updated_at": true
         },
@@ -53,9 +51,7 @@
             "entity_id": true,
             "activity_id": true,
             "model_class": true,
-            "item_id": true,
-            "status": true,
-            "response": true
+            "item_id": true
         },
         "index": {
             "ADMIN_ACTIVITY_DETAIL_ACTIVITY_ID": true

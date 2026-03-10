@@ -176,28 +176,6 @@ class Activity extends AbstractModel implements ActivityInterface
         return $this->setData(self::ITEM_URL, $itemUrl);
     }
 
-    public function isRevertable(): ?bool
-    {
-        $value = $this->getData(self::IS_REVERTABLE);
-        return $value === null ? null : (bool)$value;
-    }
-
-    public function setIsRevertable(?bool $isRevertable): ActivityInterface
-    {
-        return $this->setData(self::IS_REVERTABLE, $isRevertable);
-    }
-
-    public function getRevertBy(): ?string
-    {
-        $value = $this->getData(self::REVERT_BY);
-        return $value === null ? null : (string)$value;
-    }
-
-    public function setRevertBy(?string $revertBy): ActivityInterface
-    {
-        return $this->setData(self::REVERT_BY, $revertBy);
-    }
-
     public function getCreatedAt(): string
     {
         return (string)$this->getData(self::CREATED_AT);

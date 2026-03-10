@@ -1,6 +1,6 @@
 {
     "name": "mage-os/module-admin-activity-log",
-    "description": "The Admin Activity extension makes it easy to track all admin activity and revert changes.",
+    "description": "The Admin Activity extension makes it easy to track all admin activity with comprehensive audit logging.",
     "type": "magento2-module",
     "license": [
         "OSL-3.0"
