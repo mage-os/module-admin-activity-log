@@ -179,6 +179,220 @@ class FieldTrackerTest extends TestCase
         $this->assertSame([], $result);
     }
 
+    // --- getEditData: happy path ---
+
+    public function testGetEditDataDetectsGenuineChange(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['name' => 'New Name']);
+        $model->setOrigData(['name' => 'Old Name']);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayHasKey('name', $result);
+        $this->assertSame('Old Name', $result['name']['old_value']);
+        $this->assertSame('New Name', $result['name']['new_value']);
+    }
+
+    public function testGetEditDataIgnoresUnchangedField(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['name' => 'Same']);
+        $model->setOrigData(['name' => 'Same']);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('name', $result);
+    }
+
+    public function testGetEditDataSkipsFieldsInSkipList(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn(['updated_at']);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['updated_at' => '2026-01-02', 'name' => 'New']);
+        $model->setOrigData(['updated_at' => '2026-01-01', 'name' => 'Old']);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('updated_at', $result);
+        $this->assertArrayHasKey('name', $result);
+    }
+
+    // --- getEditData: edge/boundary cases for type normalization ---
+
+    public function testGetEditDataIgnoresIntZeroVsStringZero(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['sort_order' => '0']);
+        $model->setOrigData(['sort_order' => 0]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('sort_order', $result, 'int 0 vs string "0" should not be a change');
+    }
+
+    public function testGetEditDataIgnoresNullVsEmptyString(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['description' => '']);
+        $model->setOrigData(['description' => null]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('description', $result, 'null vs empty string should not be a change');
+    }
+
+    public function testGetEditDataIgnoresFalseVsEmptyString(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['is_active' => '']);
+        $model->setOrigData(['is_active' => false]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('is_active', $result, 'false vs empty string should not be a change');
+    }
+
+    public function testGetEditDataDetectsZeroToOneChange(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['status' => 1]);
+        $model->setOrigData(['status' => 0]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayHasKey('status', $result, 'Change from 0 to 1 must be detected');
+        $this->assertSame('0', $result['status']['old_value']);
+        $this->assertSame('1', $result['status']['new_value']);
+    }
+
+    public function testGetEditDataDetectsOneToZeroChange(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['status' => 0]);
+        $model->setOrigData(['status' => 1]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayHasKey('status', $result, 'Change from 1 to 0 must be detected');
+        $this->assertSame('1', $result['status']['old_value']);
+        $this->assertSame('0', $result['status']['new_value']);
+    }
+
+    public function testGetEditDataDetectsNullToValue(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['weight' => '5.00']);
+        $model->setOrigData(['weight' => null]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayHasKey('weight', $result, 'Change from null to value must be detected');
+        $this->assertSame('', $result['weight']['old_value']);
+        $this->assertSame('5.00', $result['weight']['new_value']);
+    }
+
+    public function testGetEditDataDetectsValueToNull(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        // origData has value, current data has null — but getData() won't have a null
+        // key in the loop. Simulate with empty string which is the typical form POST value.
+        $model = new DataObject(['weight' => '']);
+        $model->setOrigData(['weight' => '5.00']);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayHasKey('weight', $result, 'Change from value to empty must be detected');
+        $this->assertSame('5.00', $result['weight']['old_value']);
+        $this->assertSame('', $result['weight']['new_value']);
+    }
+
+    public function testGetEditDataIgnoresIntOneVsStringOne(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['is_active' => '1']);
+        $model->setOrigData(['is_active' => 1]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('is_active', $result, 'int 1 vs string "1" should not be a change');
+    }
+
+    public function testGetEditDataIgnoresFloatVsStringEquivalent(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['price' => '99.99']);
+        $model->setOrigData(['price' => 99.99]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('price', $result, 'float 99.99 vs string "99.99" should not be a change');
+    }
+
+    public function testGetEditDataIgnoresBothNullFields(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['special_price' => null]);
+        $model->setOrigData(['special_price' => null]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayNotHasKey('special_price', $result, 'Both null should not be a change');
+    }
+
+    public function testGetEditDataWithEmptyModelReturnsEmpty(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject([]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertSame([], $result);
+    }
+
+    public function testGetEditDataMissingOrigDataKeyDetectsChange(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $model = new DataObject(['new_field' => 'value']);
+        // origData has no 'new_field' key — getOrigData('new_field') returns null
+        $model->setOrigData([]);
+
+        $result = $this->fieldTracker->getEditData($model, []);
+
+        $this->assertArrayHasKey('new_field', $result);
+        $this->assertSame('', $result['new_field']['old_value']);
+        $this->assertSame('value', $result['new_field']['new_value']);
+    }
+
     public function testGetDeleteDataWithOrigData(): void
     {
         $model = new DataObject([]);

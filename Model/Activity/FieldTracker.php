@@ -126,10 +126,10 @@ class FieldTracker implements FieldTrackerInterface
                 if ($this->validateValue($model, $key, $value, $skipFieldArray)) {
                     continue;
                 }
-                $newData = !empty($value) ? $value : '';
-                $oldData = !empty($model->getOrigData($key)) ? $model->getOrigData($key) : '';
-                if (!empty($newData) || !empty($oldData)) {
-                    if ($newData != $oldData) {
+                $newData = $this->normalizeValue($value);
+                $oldData = $this->normalizeValue($model->getOrigData($key));
+                if ($newData !== '' || $oldData !== '') {
+                    if ($newData !== $oldData) {
                         $logData[$key] = [
                             'old_value' => $this->prepareValue($oldData),
                             'new_value' => $this->prepareValue($newData)
@@ -259,6 +259,24 @@ class FieldTracker implements FieldTrackerInterface
         }
         return in_array('current_product_id', $methodOrFields, true)
             || in_array('product_has_weight', $methodOrFields, true);
+    }
+
+    /**
+     * Normalize a scalar value to a string for comparison
+     *
+     * Uses (string) cast instead of empty() to preserve meaningful values
+     * like "0" and 0 that empty() would incorrectly treat as blank.
+     *
+     * @param mixed $value Raw value from model data or origData
+     * @return string Normalized string for comparison
+     */
+    private function normalizeValue(mixed $value): string
+    {
+        if ($value === null || $value === '' || $value === false) {
+            return '';
+        }
+
+        return (string)$value;
     }
 
     /**
