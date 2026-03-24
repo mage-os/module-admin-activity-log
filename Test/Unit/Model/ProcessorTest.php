@@ -455,6 +455,84 @@ class ProcessorTest extends TestCase
         ];
     }
 
+    public function testGetEditUrlExtractsSectionFromSystemConfigPath(): void
+    {
+        $fullActionName = 'adminhtml_system_config_save';
+        $actionName = 'save';
+        $eventConfig = [
+            'module' => SystemConfig::MODULE_SYSTEM_CONFIGURATION,
+            'action' => 'save',
+        ];
+
+        $this->config
+            ->method('getEventByAction')
+            ->with($fullActionName)
+            ->willReturn($eventConfig);
+
+        $this->config
+            ->method('getActivityModuleEditUrl')
+            ->with(SystemConfig::MODULE_SYSTEM_CONFIGURATION)
+            ->willReturn('admin/system_config/edit/section/{{id}}');
+
+        $mockRequest = $this->createMock(\Magento\Framework\App\Request\Http::class);
+        $mockRequest->method('getModuleName')->willReturn('admin');
+        $mockRequest->method('getControllerName')->willReturn('system_config');
+        $mockRequest->method('getActionName')->willReturn('save');
+
+        $this->handler
+            ->method('getRequest')
+            ->willReturn($mockRequest);
+
+        $this->processor->init($fullActionName, $actionName);
+
+        $model = new DataObject([
+            'field_config' => ['path' => 'web/unsecure/base_url'],
+        ]);
+
+        $result = $this->processor->getEditUrl($model);
+
+        $this->assertSame('admin/system_config/edit/section/web', $result);
+    }
+
+    public function testGetEditUrlHandlesNestedSystemConfigPath(): void
+    {
+        $fullActionName = 'adminhtml_system_config_save';
+        $actionName = 'save';
+        $eventConfig = [
+            'module' => SystemConfig::MODULE_SYSTEM_CONFIGURATION,
+            'action' => 'save',
+        ];
+
+        $this->config
+            ->method('getEventByAction')
+            ->with($fullActionName)
+            ->willReturn($eventConfig);
+
+        $this->config
+            ->method('getActivityModuleEditUrl')
+            ->with(SystemConfig::MODULE_SYSTEM_CONFIGURATION)
+            ->willReturn('admin/system_config/edit/section/{{id}}');
+
+        $mockRequest = $this->createMock(\Magento\Framework\App\Request\Http::class);
+        $mockRequest->method('getModuleName')->willReturn('admin');
+        $mockRequest->method('getControllerName')->willReturn('system_config');
+        $mockRequest->method('getActionName')->willReturn('save');
+
+        $this->handler
+            ->method('getRequest')
+            ->willReturn($mockRequest);
+
+        $this->processor->init($fullActionName, $actionName);
+
+        $model = new DataObject([
+            'field_config' => ['path' => 'catalog/frontend/list_per_page'],
+        ]);
+
+        $result = $this->processor->getEditUrl($model);
+
+        $this->assertSame('admin/system_config/edit/section/catalog', $result);
+    }
+
     public function testGetStoreIdFallsBackToStoreManagerWhenStoreIdIsEmptyArray(): void
     {
         $model = new DataObject(['store_id' => []]);
