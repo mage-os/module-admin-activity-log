@@ -188,28 +188,6 @@
             </argument>
         </column>
 
-        <!-- Username Column -->
-        <column name="username">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="visible" xsi:type="boolean">false</item>
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">Username</item>
-                </item>
-            </argument>
-        </column>
-
-        <!-- Name Column -->
-        <column name="name">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="visible" xsi:type="boolean">false</item>
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">Name</item>
-                </item>
-            </argument>
-        </column>
-
         <!-- Activity Type Column -->
         <column name="action_type">
             <argument name="data" xsi:type="array">
@@ -223,44 +201,12 @@
             </argument>
         </column>
 
-        <!-- Store Column -->
-        <column name="store_id" class="MageOS\AdminActivityLog\Ui\Component\Listing\Column\StoreColumn">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">true</item>
-                    <item name="bodyTmpl" xsi:type="string">ui/grid/cells/html</item>
-                    <item name="label" xsi:type="string" translate="true">Store View</item>
-                </item>
-            </argument>
-        </column>
-
-        <!-- Module Column -->
-        <column name="module">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">Module</item>
-                </item>
-            </argument>
-        </column>
-
-        <!-- Fullaction Column (hidden by default) -->
+        <!-- Full Action Column -->
         <column name="fullaction">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="visible" xsi:type="boolean">false</item>
                     <item name="filter" xsi:type="string">text</item>
                     <item name="label" xsi:type="string" translate="true">Full Action</item>
-                </item>
-            </argument>
-        </column>
-
-        <!-- IP Column -->
-        <column name="remote_ip">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">IP Address</item>
                 </item>
             </argument>
         </column>
@@ -276,6 +222,39 @@
             </argument>
         </column>
 
+        <!-- IP Column -->
+        <column name="remote_ip">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">IP Address</item>
+                </item>
+            </argument>
+        </column>
+
+        <!-- Module Column (hidden by default) -->
+        <column name="module">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Module</item>
+                </item>
+            </argument>
+        </column>
+
+        <!-- Store Column (hidden by default) -->
+        <column name="store_id" class="MageOS\AdminActivityLog\Ui\Component\Listing\Column\StoreColumn">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="filter" xsi:type="string">true</item>
+                    <item name="bodyTmpl" xsi:type="string">ui/grid/cells/html</item>
+                    <item name="label" xsi:type="string" translate="true">Store View</item>
+                </item>
+            </argument>
+        </column>
+
         <!-- Item Path Column (hidden by default) -->
         <column name="item_path">
             <argument name="data" xsi:type="array">
@@ -287,7 +266,7 @@
             </argument>
         </column>
 
-        <!-- Scope Column (hidden) -->
+        <!-- Scope Column (hidden by default) -->
         <column name="scope">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
@@ -298,7 +277,7 @@
             </argument>
         </column>
 
-        <!-- Forwarded IP Column (hidden) -->
+        <!-- Forwarded IP Column (hidden by default) -->
         <column name="forwarded_ip">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
@@ -309,7 +288,7 @@
             </argument>
         </column>
 
-        <!-- User Agent Column (hidden) -->
+        <!-- User Agent Column (hidden by default) -->
         <column name="user_agent">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
@@ -319,7 +298,29 @@
             </argument>
         </column>
 
-        <!-- Item URL Column (hidden) -->
+        <!-- Username Column (hidden by default) -->
+        <column name="username">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Username</item>
+                </item>
+            </argument>
+        </column>
+
+        <!-- Name Column (hidden by default) -->
+        <column name="name">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Name</item>
+                </item>
+            </argument>
+        </column>
+
+        <!-- Item URL Column (hidden by default) -->
         <column name="item_url">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
@@ -330,7 +331,7 @@
             </argument>
         </column>
 
-        <!-- Updated At Column (hidden) -->
+        <!-- Updated At Column (hidden by default) -->
         <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
