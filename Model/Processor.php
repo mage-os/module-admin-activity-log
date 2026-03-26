@@ -137,7 +137,9 @@ class Processor
             $id = $model->getOrderId() ?: $model->getParentId();
         }
         if ($this->eventConfig['module'] === SystemConfig::MODULE_SYSTEM_CONFIGURATION) {
-            $id = $model->getData('field_config')['path'];
+            $path = $model->getData('field_config')['path'] ?? '';
+            // Extract section (first segment) from config path e.g. "web/unsecure/base_url" → "web"
+            $id = explode('/', (string)$path)[0];
         }
 
         return str_replace(
