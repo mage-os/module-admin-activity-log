@@ -104,10 +104,10 @@ class ThemeConfig implements ModelInterface
             if (in_array($key, $fieldArray)) {
                 continue;
             }
-            $newValue = !empty($value) ? $value : '';
-            $oldValue = !empty($oldData[$key]) ? $oldData[$key] : '';
+            $newValue = $this->normalizeValue($value);
+            $oldValue = $this->normalizeValue($oldData[$key] ?? null);
 
-            if ($newValue != $oldValue) {
+            if ($newValue !== $oldValue) {
                 $key = 'design/' . preg_replace('/_/', '/', (string)$key, 1);
                 $logData[$key] = [
                     'old_value' => $oldValue,
@@ -117,5 +117,20 @@ class ThemeConfig implements ModelInterface
         }
 
         return $logData;
+    }
+
+    /**
+     * Normalize a scalar value to a string for comparison
+     *
+     * @param mixed $value Raw value
+     * @return string Normalized string
+     */
+    private function normalizeValue(mixed $value): string
+    {
+        if ($value === null || $value === '' || $value === false) {
+            return '';
+        }
+
+        return (string)$value;
     }
 }

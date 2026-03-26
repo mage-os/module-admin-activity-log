@@ -17,6 +17,7 @@ use Magento\Backend\Model\Session;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Model\Activity;
 use MageOS\AdminActivityLog\Model\ActivityLog;
 use MageOS\AdminActivityLog\Model\ActivityLogDetail;
@@ -52,30 +53,41 @@ class PostDispatch
     {
         $logData = [];
         $status = $this->request->getParam('status', '');
-        if ($status != '') {
-            $logData['status'] = [
-                'old_value' => $model->getStatus(),
-                'new_value' => $status
-            ];
+        if ($status !== '') {
+            $oldStatus = (string)($model->getStatus() ?? '');
+            if ($oldStatus !== (string)$status) {
+                $logData['status'] = [
+                    'old_value' => $oldStatus,
+                    'new_value' => (string)$status
+                ];
+            }
         }
 
         $attributes = $this->request->getParam('attributes', []);
         if (!empty($attributes)) {
             foreach ($attributes as $attribute => $value) {
-                $logData[$attribute] = [
-                    'old_value' => $model->getData($attribute),
-                    'new_value' => $value
-                ];
+                $oldValue = (string)($model->getData($attribute) ?? '');
+                $newValue = (string)($value ?? '');
+                if ($oldValue !== $newValue) {
+                    $logData[$attribute] = [
+                        'old_value' => $oldValue,
+                        'new_value' => $newValue
+                    ];
+                }
             }
         }
 
         $inventories = $this->request->getParam('inventory', []);
         if (!empty($inventories)) {
             foreach ($inventories as $field => $value) {
-                $logData[$field] = [
-                    'old_value' => $model->getData($field),
-                    'new_value' => $value
-                ];
+                $oldValue = (string)($model->getData($field) ?? '');
+                $newValue = (string)($value ?? '');
+                if ($oldValue !== $newValue) {
+                    $logData[$field] = [
+                        'old_value' => $oldValue,
+                        'new_value' => $newValue
+                    ];
+                }
             }
         }
 
