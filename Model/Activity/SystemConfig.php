@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Model\Activity;
 
 use Magento\Config\Model\Config\Structure;
-use Magento\Config\Model\Config\Structure\Element\Group;
 use Magento\Config\Model\Config\Structure\Element\Section;
 use Magento\Framework\App\Config\ValueFactory;
 use Magento\Framework\DataObject;
@@ -55,7 +54,8 @@ class SystemConfig implements ModelInterface
     public function getHumanReadablePath(string $path): string
     {
         $labels = [__('System Configuration')];
-        [$sectionId, $groupId, $fieldId] = explode('/', $path);
+        $parts = explode('/', $path);
+        $sectionId = $parts[0];
 
         $section = $this->configStructure->getElement($sectionId);
         if (!$section instanceof Section) {
@@ -74,20 +74,6 @@ class SystemConfig implements ModelInterface
         }
 
         $labels[] = $section->getLabel();
-        foreach ($section->getChildren() as $group) {
-            if (!$group instanceof Group || $group->getId() !== $groupId) {
-                continue;
-            }
-
-            $labels[] = $group->getLabel();
-            foreach ($group->getChildren() as $field) {
-                if ($field->getId() !== $fieldId) {
-                    continue;
-                }
-
-                $labels[] = $field->getLabel();
-            }
-        }
 
         return implode(' > ', $labels);
     }
@@ -131,60 +117,32 @@ class SystemConfig implements ModelInterface
         $logData = [];
 
         $path = $this->getPath($model);
-        $result = $this->collectAdditionalData(
-            $model->getOrigData() ?? [],
-            $model->getGroups() ?? []
-        );
-
         $model->setConfig('System Configuration');
         $model->setId($path);
 
-        if (!empty($result) && is_array($result)) {
-            foreach ($result as $group => $fields) {
-                if (!empty($fields['fields'])) {
-                    foreach ($fields['fields'] as $field => $value) {
-                        if (empty($value)) {
-                            continue;
-                        }
-                        $fieldPath = implode('/', [
-                            $path,
-                            $group,
-                            $field
-                        ]);
+        $oldGroups = $model->getOrigData() ?? [];
+        $newGroups = $model->getGroups() ?? [];
 
-                        $logData[$fieldPath] = [
-                            'old_value' => $value['old_value'],
-                            'new_value' => $value['new_value']
-                        ];
-                    }
+        foreach ($newGroups as $group => $groupData) {
+            if (empty($groupData['fields'])) {
+                continue;
+            }
+            foreach ($groupData['fields'] as $field => $fieldData) {
+                $newRaw = $fieldData['value'] ?? '';
+                $oldRaw = $oldGroups[$group]['fields'][$field]['value'] ?? '';
+                $newValue = is_array($newRaw) ? implode(',', $newRaw) : (string)$newRaw;
+                $oldValue = is_array($oldRaw) ? implode(',', $oldRaw) : (string)$oldRaw;
+                if ($newValue === $oldValue) {
+                    continue;
                 }
+                $fieldPath = implode('/', [$path, $group, $field]);
+                $logData[$fieldPath] = [
+                    'old_value' => $oldValue,
+                    'new_value' => $newValue,
+                ];
             }
         }
 
         return $logData;
-    }
-
-    /**
-     * Set additional data
-     * @param array $oldData
-     * @param mixed $newData
-     * @return array
-     */
-    protected function collectAdditionalData(array $oldData, array $newData): array
-    {
-        $result = [];
-        if (!empty($oldData) && is_array($oldData)) {
-            foreach ($oldData as $key => $value) {
-                if (isset($newData[$key])) {
-                    if (is_array($value)) {
-                        $result[$key] = $this->collectAdditionalData($value, $newData[$key]);
-                    } elseif (!is_array($newData[$key]) && (string)$value != (string)$newData[$key]) {
-                        $result['new_value'] = (string)$newData[$key];
-                        $result['old_value'] = $value;
-                    }
-                }
-            }
-        }
-        return $result;
     }
 }
