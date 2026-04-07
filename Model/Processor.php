@@ -145,7 +145,7 @@ class Processor
         return str_replace(
             $this->urlParams,
             [
-                $this->handler->getRequest()->getModuleName(),
+                $this->handler->getRequest()->getRouteName(),
                 $this->handler->getRequest()->getControllerName(),
                 $this->handler->getRequest()->getActionName(),
                 self::PRIMARY_FIELD,

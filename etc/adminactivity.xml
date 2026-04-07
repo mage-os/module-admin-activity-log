@@ -433,7 +433,7 @@
                     <field>check_if_is_new</field>
                 </skip_fields>
                 <configpath constant="MODULE_SYSTEM_CONFIG" />
-                <editurl url="admin/system_config/edit/section/{{id}}" />
+                <editurl url="adminhtml/system_config/edit/section/{{id}}" />
                 <itemfield field="field_config" />
             </config>
         </module>
@@ -455,7 +455,7 @@
                     <field>check_if_is_new</field>
                 </skip_fields>
                 <configpath constant="MODULE_SYSTEM_CONFIG" />
-                <editurl url="admin/system_store/editStore/store_id/{{id}}" />
+                <editurl url="adminhtml/system_store/editStore/store_id/{{id}}" />
                 <itemfield field="code" />
             </config>
         </module>

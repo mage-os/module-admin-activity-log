@@ -472,10 +472,10 @@ class ProcessorTest extends TestCase
         $this->config
             ->method('getActivityModuleEditUrl')
             ->with(SystemConfig::MODULE_SYSTEM_CONFIGURATION)
-            ->willReturn('admin/system_config/edit/section/{{id}}');
+            ->willReturn('adminhtml/system_config/edit/section/{{id}}');
 
         $mockRequest = $this->createMock(\Magento\Framework\App\Request\Http::class);
-        $mockRequest->method('getModuleName')->willReturn('admin');
+        $mockRequest->method('getRouteName')->willReturn('adminhtml');
         $mockRequest->method('getControllerName')->willReturn('system_config');
         $mockRequest->method('getActionName')->willReturn('save');
 
@@ -491,7 +491,7 @@ class ProcessorTest extends TestCase
 
         $result = $this->processor->getEditUrl($model);
 
-        $this->assertSame('admin/system_config/edit/section/web', $result);
+        $this->assertSame('adminhtml/system_config/edit/section/web', $result);
     }
 
     public function testGetEditUrlHandlesNestedSystemConfigPath(): void
@@ -511,10 +511,10 @@ class ProcessorTest extends TestCase
         $this->config
             ->method('getActivityModuleEditUrl')
             ->with(SystemConfig::MODULE_SYSTEM_CONFIGURATION)
-            ->willReturn('admin/system_config/edit/section/{{id}}');
+            ->willReturn('adminhtml/system_config/edit/section/{{id}}');
 
         $mockRequest = $this->createMock(\Magento\Framework\App\Request\Http::class);
-        $mockRequest->method('getModuleName')->willReturn('admin');
+        $mockRequest->method('getRouteName')->willReturn('adminhtml');
         $mockRequest->method('getControllerName')->willReturn('system_config');
         $mockRequest->method('getActionName')->willReturn('save');
 
@@ -530,7 +530,7 @@ class ProcessorTest extends TestCase
 
         $result = $this->processor->getEditUrl($model);
 
-        $this->assertSame('admin/system_config/edit/section/catalog', $result);
+        $this->assertSame('adminhtml/system_config/edit/section/catalog', $result);
     }
 
     public function testGetStoreIdFallsBackToStoreManagerWhenStoreIdIsEmptyArray(): void
