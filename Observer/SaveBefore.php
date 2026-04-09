@@ -41,6 +41,9 @@ class SaveBefore extends AbstractActivityObserver
                     return;
                 }
                 $data = $this->activityRepository->getOldData($object);
+                if (!$data) {
+                    return;
+                }
                 foreach ($data->getData() as $key => $value) {
                     $object->setOrigData($key, $value);
                 }

@@ -15,27 +15,22 @@ namespace MageOS\AdminActivityLog\Model;
 
 use InvalidArgumentException;
 use Magento\Framework\Model\AbstractModel;
-use Magento\Framework\ObjectManagerInterface;
 use MageOS\AdminActivityLog\Api\ModelResolverInterface;
 
 /**
  * Model resolver for dynamic model loading
  *
- * This class encapsulates ObjectManager usage for dynamic model resolution,
- * providing a testable abstraction for loading models by class name.
- *
- * ObjectManager usage is acceptable here as this is a factory/resolver class
- * that handles dynamic instantiation requirements.
+ * Resolves and instantiates models via a DI-injected factory map keyed by FQCN.
+ * Only classes explicitly registered in the factory map can be instantiated,
+ * which enforces the security allowlist without requiring ObjectManager.
  */
 class ModelResolver implements ModelResolverInterface
 {
     /**
-     * @param ObjectManagerInterface $objectManager
-     * @param array<string> $allowedModelClasses List of allowed model class names for security validation
+     * @param array<class-string, object> $modelFactories Map of FQCN => factory instance (must expose create())
      */
     public function __construct(
-        private readonly ObjectManagerInterface $objectManager,
-        private readonly array $allowedModelClasses = []
+        private readonly array $modelFactories = []
     ) {
     }
 
@@ -44,22 +39,15 @@ class ModelResolver implements ModelResolverInterface
      */
     public function getModel(string $className): AbstractModel
     {
-        if (!$this->isAllowedModelClass($className)) {
+        $className = str_replace('\\Interceptor', '', $className);
+
+        if (!isset($this->modelFactories[$className])) {
             throw new InvalidArgumentException(
                 sprintf('Class "%s" is not in the allowed model classes list', $className)
             );
         }
 
-        if (!$this->isValidModelClass($className)) {
-            throw new InvalidArgumentException(
-                sprintf('Class "%s" is not a valid AbstractModel', $className)
-            );
-        }
-
-        /** @var AbstractModel $model */
-        $model = $this->objectManager->create($className);
-
-        return $model;
+        return $this->modelFactories[$className]->create();
     }
 
     /**
@@ -83,11 +71,7 @@ class ModelResolver implements ModelResolverInterface
      */
     public function isValidModelClass(string $className): bool
     {
-        if (!class_exists($className)) {
-            return false;
-        }
-
-        return is_subclass_of($className, AbstractModel::class);
+        return $this->isAllowedModelClass($className);
     }
 
     /**
@@ -95,18 +79,8 @@ class ModelResolver implements ModelResolverInterface
      */
     public function isAllowedModelClass(string $className): bool
     {
-        $className = str_replace('\Interceptor', '', $className);
+        $className = str_replace('\\Interceptor', '', $className);
 
-        if (in_array($className, $this->allowedModelClasses, true)) {
-            return true;
-        }
-
-        foreach ($this->allowedModelClasses as $allowedClass) {
-            if (is_subclass_of($className, $allowedClass)) {
-                return true;
-            }
-        }
-
-        return false;
+        return isset($this->modelFactories[$className]);
     }
 }
