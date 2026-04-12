@@ -16,9 +16,9 @@ namespace MageOS\AdminActivityLog\Model\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Value;
 use Magento\Framework\DataObject;
+use Magento\Store\Model\ScopeInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Config;
-use Magento\Store\Model\ScopeInterface;
 
 /**
  * Service class for admin activity configuration

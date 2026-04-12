@@ -31,56 +31,57 @@
     <!-- Field tracking service -->
     <preference for="MageOS\AdminActivityLog\Api\FieldTrackerInterface" type="MageOS\AdminActivityLog\Model\Activity\FieldTracker" />
 
-    <!-- Allowed model classes for activity logging operations (security allowlist) -->
+    <!-- Factory map for model resolver (security allowlist). Keys are FQCNs, values are factories.
+         Only models listed here can be instantiated during activity log operations. -->
     <type name="MageOS\AdminActivityLog\Model\ModelResolver">
         <arguments>
-            <argument name="allowedModelClasses" xsi:type="array">
+            <argument name="modelFactories" xsi:type="array">
                 <!-- Catalog -->
-                <item name="catalog_product" xsi:type="string">Magento\Catalog\Model\Product</item>
-                <item name="catalog_product_action" xsi:type="string">Magento\Catalog\Model\Product\Action</item>
-                <item name="catalog_category" xsi:type="string">Magento\Catalog\Model\Category</item>
-                <item name="catalog_eav_attribute" xsi:type="string">Magento\Catalog\Model\ResourceModel\Eav\Attribute</item>
+                <item name="Magento\Catalog\Model\Product" xsi:type="object">Magento\Catalog\Model\ProductFactory</item>
+                <item name="Magento\Catalog\Model\Product\Action" xsi:type="object">Magento\Catalog\Model\Product\ActionFactory</item>
+                <item name="Magento\Catalog\Model\Category" xsi:type="object">Magento\Catalog\Model\CategoryFactory</item>
+                <item name="Magento\Catalog\Model\ResourceModel\Eav\Attribute" xsi:type="object">Magento\Catalog\Model\ResourceModel\Eav\AttributeFactory</item>
                 <!-- Customer -->
-                <item name="customer" xsi:type="string">Magento\Customer\Model\Customer</item>
-                <item name="customer_address" xsi:type="string">Magento\Customer\Model\Address</item>
-                <item name="customer_group" xsi:type="string">Magento\Customer\Model\Group</item>
-                <item name="newsletter_subscriber" xsi:type="string">Magento\Newsletter\Model\Subscriber</item>
+                <item name="Magento\Customer\Model\Customer" xsi:type="object">Magento\Customer\Model\CustomerFactory</item>
+                <item name="Magento\Customer\Model\Address" xsi:type="object">Magento\Customer\Model\AddressFactory</item>
+                <item name="Magento\Customer\Model\Group" xsi:type="object">Magento\Customer\Model\GroupFactory</item>
+                <item name="Magento\Newsletter\Model\Subscriber" xsi:type="object">Magento\Newsletter\Model\SubscriberFactory</item>
                 <!-- CMS -->
-                <item name="cms_page" xsi:type="string">Magento\Cms\Model\Page</item>
-                <item name="cms_block" xsi:type="string">Magento\Cms\Model\Block</item>
-                <item name="widget_instance" xsi:type="string">Magento\Widget\Model\Widget\Instance</item>
+                <item name="Magento\Cms\Model\Page" xsi:type="object">Magento\Cms\Model\PageFactory</item>
+                <item name="Magento\Cms\Model\Block" xsi:type="object">Magento\Cms\Model\BlockFactory</item>
+                <item name="Magento\Widget\Model\Widget\Instance" xsi:type="object">Magento\Widget\Model\Widget\InstanceFactory</item>
                 <!-- Email -->
-                <item name="email_template" xsi:type="string">Magento\Email\Model\Template</item>
-                <item name="newsletter_template" xsi:type="string">Magento\Newsletter\Model\Template</item>
+                <item name="Magento\Email\Model\Template" xsi:type="object">Magento\Email\Model\TemplateFactory</item>
+                <item name="Magento\Newsletter\Model\Template" xsi:type="object">Magento\Newsletter\Model\TemplateFactory</item>
                 <!-- Promotions -->
-                <item name="catalog_rule" xsi:type="string">Magento\CatalogRule\Model\Rule</item>
-                <item name="sales_rule" xsi:type="string">Magento\SalesRule\Model\Rule</item>
+                <item name="Magento\CatalogRule\Model\Rule" xsi:type="object">Magento\CatalogRule\Model\RuleFactory</item>
+                <item name="Magento\SalesRule\Model\Rule" xsi:type="object">Magento\SalesRule\Model\RuleFactory</item>
                 <!-- Sales -->
-                <item name="sales_order_address" xsi:type="string">Magento\Sales\Model\Order\Address</item>
+                <item name="Magento\Sales\Model\Order\Address" xsi:type="object">Magento\Sales\Model\Order\AddressFactory</item>
                 <!-- Tax -->
-                <item name="tax_rule" xsi:type="string">Magento\Tax\Model\Calculation\Rule</item>
-                <item name="tax_rate" xsi:type="string">Magento\Tax\Model\Calculation\Rate</item>
+                <item name="Magento\Tax\Model\Calculation\Rule" xsi:type="object">Magento\Tax\Model\Calculation\RuleFactory</item>
+                <item name="Magento\Tax\Model\Calculation\Rate" xsi:type="object">Magento\Tax\Model\Calculation\RateFactory</item>
                 <!-- Review -->
-                <item name="review" xsi:type="string">Magento\Review\Model\Review</item>
-                <item name="review_rating" xsi:type="string">Magento\Review\Model\Rating</item>
+                <item name="Magento\Review\Model\Review" xsi:type="object">Magento\Review\Model\ReviewFactory</item>
+                <item name="Magento\Review\Model\Rating" xsi:type="object">Magento\Review\Model\RatingFactory</item>
                 <!-- Store -->
-                <item name="store" xsi:type="string">Magento\Store\Model\Store</item>
-                <item name="store_website" xsi:type="string">Magento\Store\Model\Website</item>
-                <item name="store_group" xsi:type="string">Magento\Store\Model\Group</item>
+                <item name="Magento\Store\Model\Store" xsi:type="object">Magento\Store\Model\StoreFactory</item>
+                <item name="Magento\Store\Model\Website" xsi:type="object">Magento\Store\Model\WebsiteFactory</item>
+                <item name="Magento\Store\Model\Group" xsi:type="object">Magento\Store\Model\GroupFactory</item>
                 <!-- SEO -->
-                <item name="url_rewrite" xsi:type="string">Magento\UrlRewrite\Model\UrlRewrite</item>
-                <item name="search_query" xsi:type="string">Magento\Search\Model\Query</item>
-                <item name="search_synonym_group" xsi:type="string">Magento\Search\Model\SynonymGroup</item>
-                <item name="sitemap" xsi:type="string">Magento\Sitemap\Model\Sitemap</item>
+                <item name="Magento\UrlRewrite\Model\UrlRewrite" xsi:type="object">Magento\UrlRewrite\Model\UrlRewriteFactory</item>
+                <item name="Magento\Search\Model\Query" xsi:type="object">Magento\Search\Model\QueryFactory</item>
+                <item name="Magento\Search\Model\SynonymGroup" xsi:type="object">Magento\Search\Model\SynonymGroupFactory</item>
+                <item name="Magento\Sitemap\Model\Sitemap" xsi:type="object">Magento\Sitemap\Model\SitemapFactory</item>
                 <!-- EAV -->
-                <item name="eav_attribute_set" xsi:type="string">Magento\Eav\Model\Entity\Attribute\Set</item>
+                <item name="Magento\Eav\Model\Entity\Attribute\Set" xsi:type="object">Magento\Eav\Model\Entity\Attribute\SetFactory</item>
                 <!-- Admin -->
-                <item name="admin_user" xsi:type="string">Magento\User\Model\User</item>
-                <item name="admin_role" xsi:type="string">Magento\Authorization\Model\Role</item>
+                <item name="Magento\User\Model\User" xsi:type="object">Magento\User\Model\UserFactory</item>
+                <item name="Magento\Authorization\Model\Role" xsi:type="object">Magento\Authorization\Model\RoleFactory</item>
                 <!-- Integration -->
-                <item name="integration" xsi:type="string">Magento\Integration\Model\Integration</item>
+                <item name="Magento\Integration\Model\Integration" xsi:type="object">Magento\Integration\Model\IntegrationFactory</item>
                 <!-- Checkout -->
-                <item name="checkout_agreement" xsi:type="string">Magento\CheckoutAgreements\Model\Agreement</item>
+                <item name="Magento\CheckoutAgreements\Model\Agreement" xsi:type="object">Magento\CheckoutAgreements\Model\AgreementFactory</item>
             </argument>
         </arguments>
     </type>

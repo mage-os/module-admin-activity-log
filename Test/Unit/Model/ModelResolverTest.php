@@ -15,232 +15,160 @@ namespace MageOS\AdminActivityLog\Test\Unit\Model;
 
 use InvalidArgumentException;
 use Magento\Framework\Model\AbstractModel;
-use Magento\Framework\ObjectManagerInterface;
 use MageOS\AdminActivityLog\Model\Activity;
 use MageOS\AdminActivityLog\Model\ModelResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 class ModelResolverTest extends TestCase
 {
-    private ObjectManagerInterface&MockObject $objectManager;
+    private Activity&MockObject $mockModel;
+    private object $mockFactory;
     private ModelResolver $modelResolver;
     private ModelResolver $modelResolverWithAllowlist;
 
     protected function setUp(): void
     {
-        $this->objectManager = $this->createMock(ObjectManagerInterface::class);
-        $this->modelResolver = new ModelResolver($this->objectManager);
+        $this->mockModel = $this->createMock(Activity::class);
+        $mockModel = $this->mockModel;
+
+        $this->mockFactory = new class ($mockModel) {
+            public function __construct(private readonly Activity $model) {}
+            public function create(): Activity { return $this->model; }
+        };
+
+        $this->modelResolver = new ModelResolver();
         $this->modelResolverWithAllowlist = new ModelResolver(
-            $this->objectManager,
-            [Activity::class]
+            [Activity::class => $this->mockFactory]
         );
     }
 
     public function testGetModelWithValidClass(): void
     {
-        // Use Activity class which is a concrete subclass of AbstractModel
-        $className = Activity::class;
-        $mockModel = $this->createMock(Activity::class);
+        $result = $this->modelResolverWithAllowlist->getModel(Activity::class);
 
-        $this->objectManager
-            ->expects($this->once())
-            ->method('create')
-            ->with($className)
-            ->willReturn($mockModel);
-
-        $result = $this->modelResolverWithAllowlist->getModel($className);
-
-        $this->assertSame($mockModel, $result);
+        $this->assertSame($this->mockModel, $result);
     }
 
-    public function testGetModelWithInvalidClassThrowsException(): void
+    public function testGetModelWithDisallowedClassThrowsException(): void
     {
-        $className = stdClass::class;
-
-        $this->objectManager->expects($this->never())->method('create');
-
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('Class "%s" is not in the allowed model classes list', $className));
+        $this->expectExceptionMessage(
+            sprintf('Class "%s" is not in the allowed model classes list', Activity::class)
+        );
 
-        $this->modelResolver->getModel($className);
+        $this->modelResolver->getModel(Activity::class);
     }
 
     public function testGetModelWithNonExistentClassThrowsException(): void
     {
         $className = 'NonExistentClass\\That\\Does\\Not\\Exist';
 
-        $this->objectManager->expects($this->never())->method('create');
-
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('Class "%s" is not in the allowed model classes list', $className));
+        $this->expectExceptionMessage(
+            sprintf('Class "%s" is not in the allowed model classes list', $className)
+        );
 
         $this->modelResolver->getModel($className);
     }
 
+    public function testGetModelStripsInterceptorSuffix(): void
+    {
+        $interceptorClass = Activity::class . '\\Interceptor';
+
+        $result = $this->modelResolverWithAllowlist->getModel($interceptorClass);
+
+        $this->assertSame($this->mockModel, $result);
+    }
+
     public function testLoadModelWithoutField(): void
     {
-        $className = Activity::class;
         $entityId = 123;
 
-        $mockModel = $this->createMock(Activity::class);
-
-        $this->objectManager
-            ->expects($this->once())
-            ->method('create')
-            ->with($className)
-            ->willReturn($mockModel);
-
-        $mockModel
+        $this->mockModel
             ->expects($this->once())
             ->method('load')
             ->with($entityId)
             ->willReturnSelf();
 
-        $result = $this->modelResolverWithAllowlist->loadModel($className, $entityId);
+        $result = $this->modelResolverWithAllowlist->loadModel(Activity::class, $entityId);
 
-        $this->assertSame($mockModel, $result);
+        $this->assertSame($this->mockModel, $result);
     }
 
     public function testLoadModelWithField(): void
     {
-        $className = Activity::class;
         $entityId = 'test-sku';
         $field = 'sku';
 
-        $mockModel = $this->createMock(Activity::class);
-
-        $this->objectManager
-            ->expects($this->once())
-            ->method('create')
-            ->with($className)
-            ->willReturn($mockModel);
-
-        $mockModel
+        $this->mockModel
             ->expects($this->once())
             ->method('load')
             ->with($entityId, $field)
             ->willReturnSelf();
 
-        $result = $this->modelResolverWithAllowlist->loadModel($className, $entityId, $field);
+        $result = $this->modelResolverWithAllowlist->loadModel(Activity::class, $entityId, $field);
 
-        $this->assertSame($mockModel, $result);
+        $this->assertSame($this->mockModel, $result);
     }
 
     public function testLoadModelWithIntegerId(): void
     {
-        $className = Activity::class;
         $entityId = 42;
 
-        $mockModel = $this->createMock(Activity::class);
-
-        $this->objectManager
-            ->expects($this->once())
-            ->method('create')
-            ->with($className)
-            ->willReturn($mockModel);
-
-        $mockModel
+        $this->mockModel
             ->expects($this->once())
             ->method('load')
             ->with($entityId)
             ->willReturnSelf();
 
-        $result = $this->modelResolverWithAllowlist->loadModel($className, $entityId);
+        $result = $this->modelResolverWithAllowlist->loadModel(Activity::class, $entityId);
 
-        $this->assertSame($mockModel, $result);
+        $this->assertSame($this->mockModel, $result);
     }
 
-    public function testIsValidModelClassReturnsTrueForConcreteModel(): void
+    public function testIsValidModelClassReturnsTrueForAllowedClass(): void
     {
-        // Activity extends AbstractModel, so it should be valid
-        $result = $this->modelResolver->isValidModelClass(Activity::class);
-
-        $this->assertTrue($result);
+        $this->assertTrue($this->modelResolverWithAllowlist->isValidModelClass(Activity::class));
     }
 
-    public function testIsValidModelClassReturnsFalseForAbstractModelItself(): void
+    public function testIsValidModelClassReturnsFalseForDisallowedClass(): void
     {
-        // AbstractModel itself is not a subclass of AbstractModel
-        $result = $this->modelResolver->isValidModelClass(AbstractModel::class);
-
-        $this->assertFalse($result);
-    }
-
-    public function testIsValidModelClassReturnsFalseForNonExistentClass(): void
-    {
-        $result = $this->modelResolver->isValidModelClass('NonExistent\\Class\\Name');
-
-        $this->assertFalse($result);
-    }
-
-    public function testIsValidModelClassReturnsFalseForNonModelClass(): void
-    {
-        $result = $this->modelResolver->isValidModelClass(stdClass::class);
-
-        $this->assertFalse($result);
-    }
-
-    public function testIsValidModelClassReturnsFalseForInterfaceClass(): void
-    {
-        $result = $this->modelResolver->isValidModelClass(ObjectManagerInterface::class);
-
-        $this->assertFalse($result);
+        $this->assertFalse($this->modelResolver->isValidModelClass(Activity::class));
     }
 
     public function testIsAllowedModelClassReturnsFalseWhenNoAllowlistConfigured(): void
     {
-        // Without allowlist, all classes should be disallowed
-        $result = $this->modelResolver->isAllowedModelClass(Activity::class);
-
-        $this->assertFalse($result);
+        $this->assertFalse($this->modelResolver->isAllowedModelClass(Activity::class));
     }
 
     public function testIsAllowedModelClassReturnsTrueForConfiguredClass(): void
     {
-        $result = $this->modelResolverWithAllowlist->isAllowedModelClass(Activity::class);
-
-        $this->assertTrue($result);
+        $this->assertTrue($this->modelResolverWithAllowlist->isAllowedModelClass(Activity::class));
     }
 
     public function testIsAllowedModelClassReturnsFalseForUnconfiguredClass(): void
     {
-        // stdClass is not in the allowlist
-        $result = $this->modelResolverWithAllowlist->isAllowedModelClass(stdClass::class);
+        $restrictedResolver = new ModelResolver(['Some\\Other\\Model' => $this->mockFactory]);
 
-        $this->assertFalse($result);
+        $this->assertFalse($restrictedResolver->isAllowedModelClass(Activity::class));
     }
 
-    public function testGetModelWithAllowedClassSucceeds(): void
+    public function testIsAllowedModelClassStripsInterceptorSuffix(): void
     {
-        $className = Activity::class;
-        $mockModel = $this->createMock(Activity::class);
+        $interceptorClass = Activity::class . '\\Interceptor';
 
-        $this->objectManager
-            ->expects($this->once())
-            ->method('create')
-            ->with($className)
-            ->willReturn($mockModel);
-
-        $result = $this->modelResolverWithAllowlist->getModel($className);
-
-        $this->assertSame($mockModel, $result);
+        $this->assertTrue($this->modelResolverWithAllowlist->isAllowedModelClass($interceptorClass));
     }
 
-    public function testGetModelWithDisallowedClassThrowsException(): void
+    public function testSubclassIsNotImplicitlyAllowed(): void
     {
-        // Create a resolver with a very limited allowlist that doesn't include Activity
-        $restrictedResolver = new ModelResolver(
-            $this->objectManager,
-            ['Some\\Other\\Model']
+        // Unlike the previous string-based allowlist, inheritance does NOT grant access.
+        // Only the exact class registered in the factory map is allowed.
+        $subclassResolver = new ModelResolver(
+            [AbstractModel::class => $this->mockFactory]
         );
 
-        $this->objectManager->expects($this->never())->method('create');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('Class "%s" is not in the allowed model classes list', Activity::class));
-
-        $restrictedResolver->getModel(Activity::class);
+        $this->assertFalse($subclassResolver->isAllowedModelClass(Activity::class));
     }
 }
