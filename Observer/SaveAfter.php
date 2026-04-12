@@ -35,8 +35,9 @@ class SaveAfter extends AbstractActivityObserver
         if ($object->getCheckIfIsNew()) {
             if ($this->processor->getInitAction() === self::SYSTEM_CONFIG) {
                 $this->processor->modelEditAfter($object);
+            } else {
+                $this->processor->modelAddAfter($object);
             }
-            $this->processor->modelAddAfter($object);
 
             // Sync origData to current data so subsequent edit checks find no changes
             foreach ($object->getData() as $key => $value) {
