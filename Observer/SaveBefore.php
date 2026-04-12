@@ -39,6 +39,9 @@ class SaveBefore extends AbstractActivityObserver
 
         if ($this->processor->validate($object)) {
             $data = $this->activityRepository->getOldData($object);
+            if (!$data) {
+                return;
+            }
             foreach ($data->getData() as $key => $value) {
                 $object->setOrigData($key, $value);
             }
