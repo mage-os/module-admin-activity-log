@@ -130,8 +130,8 @@ class SystemConfig implements ModelInterface
             foreach ($groupData['fields'] as $field => $fieldData) {
                 $newRaw = $fieldData['value'] ?? '';
                 $oldRaw = $oldGroups[$group]['fields'][$field]['value'] ?? '';
-                $newValue = is_array($newRaw) ? implode(',', $newRaw) : (string)$newRaw;
-                $oldValue = is_array($oldRaw) ? implode(',', $oldRaw) : (string)$oldRaw;
+                $newValue = $this->flattenValue($newRaw);
+                $oldValue = $this->flattenValue($oldRaw);
                 if ($newValue === $oldValue) {
                     continue;
                 }
@@ -144,5 +144,18 @@ class SystemConfig implements ModelInterface
         }
 
         return $logData;
+    }
+
+    private function flattenValue(mixed $value): string
+    {
+        if (!is_array($value)) {
+            return (string)$value;
+        }
+
+        if (array_is_list($value) && !array_filter($value, 'is_array')) {
+            return implode(',', $value);
+        }
+
+        return (string)json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
