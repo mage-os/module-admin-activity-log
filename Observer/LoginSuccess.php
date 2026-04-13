@@ -16,14 +16,16 @@ namespace MageOS\AdminActivityLog\Observer;
 use Magento\Framework\Event\Observer;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\LoginRepositoryInterface;
+use Psr\Log\LoggerInterface;
 
 class LoginSuccess extends AbstractActivityObserver
 {
     public function __construct(
         ActivityConfigInterface $activityConfig,
+        LoggerInterface $logger,
         private readonly LoginRepositoryInterface $loginRepository
     ) {
-        parent::__construct($activityConfig);
+        parent::__construct($activityConfig, $logger);
     }
 
     protected function isEnabled(): bool

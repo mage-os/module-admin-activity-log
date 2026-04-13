@@ -16,6 +16,7 @@ namespace MageOS\AdminActivityLog\Observer;
 use Magento\Framework\Event\Observer;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Processor;
+use Psr\Log\LoggerInterface;
 
 class DeleteAfter extends AbstractActivityObserver
 {
@@ -23,9 +24,10 @@ class DeleteAfter extends AbstractActivityObserver
 
     public function __construct(
         ActivityConfigInterface $activityConfig,
+        LoggerInterface $logger,
         private readonly Processor $processor
     ) {
-        parent::__construct($activityConfig);
+        parent::__construct($activityConfig, $logger);
     }
 
     protected function process(Observer $observer): void

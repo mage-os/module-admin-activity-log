@@ -16,23 +16,25 @@ namespace MageOS\AdminActivityLog\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Abstract base class for admin activity observers
  *
  * Encapsulates common observer patterns:
  * - Module enable check
- * - Error handling
+ * - Fail-safe error handling (logging errors never block admin actions)
  */
 abstract class AbstractActivityObserver implements ObserverInterface
 {
     public function __construct(
-        protected readonly ActivityConfigInterface $activityConfig
+        protected readonly ActivityConfigInterface $activityConfig,
+        private readonly LoggerInterface $logger
     ) {
     }
 
     /**
-     * Execute observer with standard enable check
+     * Execute observer with standard enable check and fail-safe error handling
      */
     public function execute(Observer $observer): void
     {
@@ -40,7 +42,20 @@ abstract class AbstractActivityObserver implements ObserverInterface
             return;
         }
 
-        $this->process($observer);
+        try {
+            $this->process($observer);
+        } catch (\Throwable $e) {
+            $this->logger->error('Admin activity observer failed', [
+                'observer' => static::class,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 
     /**

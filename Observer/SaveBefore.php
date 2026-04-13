@@ -17,15 +17,17 @@ use Magento\Framework\Event\Observer;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
 use MageOS\AdminActivityLog\Model\Processor;
+use Psr\Log\LoggerInterface;
 
 class SaveBefore extends AbstractActivityObserver
 {
     public function __construct(
         ActivityConfigInterface $activityConfig,
+        LoggerInterface $logger,
         private readonly Processor $processor,
         private readonly ActivityRepositoryInterface $activityRepository
     ) {
-        parent::__construct($activityConfig);
+        parent::__construct($activityConfig, $logger);
     }
 
     protected function process(Observer $observer): void
