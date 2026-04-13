@@ -15,6 +15,8 @@ namespace MageOS\AdminActivityLog\Api;
 
 /**
  * Service class for checking if fields contain sensitive data that should not be logged
+ *
+ * @api
  */
 interface FieldCheckerInterface
 {

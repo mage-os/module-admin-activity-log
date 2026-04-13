@@ -15,6 +15,8 @@ namespace MageOS\AdminActivityLog\Api\Data;
 
 /**
  * Activity Log entity data interface (admin_activity_log table)
+ *
+ * @api
  */
 interface ActivityLogInterface
 {

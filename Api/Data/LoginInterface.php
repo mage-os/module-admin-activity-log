@@ -15,6 +15,8 @@ namespace MageOS\AdminActivityLog\Api\Data;
 
 /**
  * Login activity entity data interface (admin_login_log table)
+ *
+ * @api
  */
 interface LoginInterface
 {

@@ -18,6 +18,8 @@ use MageOS\AdminActivityLog\Model\ResourceModel\Login\Collection;
 
 /**
  * Interface LoginRepositoryInterface
+ *
+ * @api
  */
 interface LoginRepositoryInterface
 {
