@@ -35,18 +35,15 @@ class SaveBefore extends AbstractActivityObserver
             $object->setCheckIfIsNew(true);
         } else {
             $object->setCheckIfIsNew(false);
-            if ($this->processor->validate($object)) {
-                $origData = $object->getOrigData();
-                if (!empty($origData)) {
-                    return;
-                }
-                $data = $this->activityRepository->getOldData($object);
-                if (!$data) {
-                    return;
-                }
-                foreach ($data->getData() as $key => $value) {
-                    $object->setOrigData($key, $value);
-                }
+        }
+
+        if ($this->processor->validate($object)) {
+            $data = $this->activityRepository->getOldData($object);
+            if (!$data) {
+                return;
+            }
+            foreach ($data->getData() as $key => $value) {
+                $object->setOrigData($key, $value);
             }
         }
     }

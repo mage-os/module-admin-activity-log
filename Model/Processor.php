@@ -96,12 +96,6 @@ class Processor
      */
     public function validate($model): bool
     {
-        if ($this->activityConfig->isWildCardModel($model)) {
-            if (!empty($this->activityLogs)) {
-                return false;
-            }
-        }
-
         if ($this->eventConfig) {
             $usedModel = (array)$this->config->getEventModel($this->eventConfig['module']);
             $pathConst = $this->config->getActivityModuleConstant($this->eventConfig['module']);
@@ -182,10 +176,17 @@ class Processor
         if ($this->validate($model)) {
             $logData = $this->handler->modelEdit($model, $this->getMethod());
             if (!empty($logData)) {
-                $activity = $this->initActivity($model);
-                $activity->setActionType($label);
-
-                $this->addLog($activity, $logData, $model);
+                if ($this->activityConfig->isWildCardModel($model) && !empty($this->activityLogs)) {
+                    $lastIndex = array_key_last($this->activityLogs);
+                    $this->activityLogs[$lastIndex][ActivityLog::class] = array_merge(
+                        $this->activityLogs[$lastIndex][ActivityLog::class],
+                        $logData
+                    );
+                } else {
+                    $activity = $this->initActivity($model);
+                    $activity->setActionType($label);
+                    $this->addLog($activity, $logData, $model);
+                }
             }
         }
 

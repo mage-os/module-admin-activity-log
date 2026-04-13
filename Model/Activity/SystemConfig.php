@@ -15,6 +15,7 @@ namespace MageOS\AdminActivityLog\Model\Activity;
 
 use Magento\Config\Model\Config\Structure;
 use Magento\Config\Model\Config\Structure\Element\Section;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\ValueFactory;
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
@@ -30,7 +31,8 @@ class SystemConfig implements ModelInterface
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ValueFactory $valueFactory,
-        private readonly Structure $configStructure
+        private readonly Structure $configStructure,
+        private readonly ScopeConfigInterface $scopeConfig
     ) {
     }
 
@@ -116,31 +118,32 @@ class SystemConfig implements ModelInterface
     {
         $logData = [];
 
-        $path = $this->getPath($model);
+        $section = $this->getPath($model);
         $model->setConfig('System Configuration');
-        $model->setId($path);
+        $model->setId($section);
 
+        $fullPath = (string)$model->getData('path');
+        $parts = explode('/', $fullPath);
+        if (count($parts) < 3) {
+            return $logData;
+        }
+
+        [, $group, $field] = $parts;
+
+        $newRaw = $model->getData('value') ?? '';
         $oldGroups = $model->getOrigData() ?? [];
-        $newGroups = $model->getGroups() ?? [];
+        $oldRaw = $oldGroups[$group]['fields'][$field]['value']
+            ?? $this->scopeConfig->getValue($fullPath)
+            ?? '';
 
-        foreach ($newGroups as $group => $groupData) {
-            if (empty($groupData['fields'])) {
-                continue;
-            }
-            foreach ($groupData['fields'] as $field => $fieldData) {
-                $newRaw = $fieldData['value'] ?? '';
-                $oldRaw = $oldGroups[$group]['fields'][$field]['value'] ?? '';
-                $newValue = $this->flattenValue($newRaw);
-                $oldValue = $this->flattenValue($oldRaw);
-                if ($newValue === $oldValue) {
-                    continue;
-                }
-                $fieldPath = implode('/', [$path, $group, $field]);
-                $logData[$fieldPath] = [
-                    'old_value' => $oldValue,
-                    'new_value' => $newValue,
-                ];
-            }
+        $newValue = $this->flattenValue($newRaw);
+        $oldValue = $this->flattenValue($oldRaw);
+
+        if ($newValue !== $oldValue) {
+            $logData[$fullPath] = [
+                'old_value' => $oldValue,
+                'new_value' => $newValue,
+            ];
         }
 
         return $logData;
