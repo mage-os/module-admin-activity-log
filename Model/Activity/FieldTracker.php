@@ -15,6 +15,7 @@ namespace MageOS\AdminActivityLog\Model\Activity;
 
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
+use MageOS\AdminActivityLog\Api\FieldCheckerInterface;
 use MageOS\AdminActivityLog\Api\FieldTrackerInterface;
 use MageOS\AdminActivityLog\Model\Config;
 
@@ -30,6 +31,11 @@ class FieldTracker implements FieldTrackerInterface
     private const MAX_VALUE_LENGTH = 65000;
 
     /**
+     * Placeholder value for redacted sensitive fields
+     */
+    private const REDACTED_VALUE = '******';
+
+    /**
      * Method name constants for wildcard model detection
      */
     private const SYSTEM_METHOD = 'getSystemConfigFieldData';
@@ -41,12 +47,14 @@ class FieldTracker implements FieldTrackerInterface
      * @param ThemeConfig $themeConfig Theme configuration handler
      * @param Config $config Activity configuration
      * @param ActivityConfigInterface $activityConfig Activity config service
+     * @param FieldCheckerInterface $fieldChecker Protected field checker
      */
     public function __construct(
         private readonly SystemConfig $systemConfig,
         private readonly ThemeConfig $themeConfig,
         private readonly Config $config,
-        private readonly ActivityConfigInterface $activityConfig
+        private readonly ActivityConfigInterface $activityConfig,
+        private readonly FieldCheckerInterface $fieldChecker
     ) {
     }
 
@@ -90,10 +98,10 @@ class FieldTracker implements FieldTrackerInterface
                 if ($this->validateValue($model, $key, $value, $skipFieldArray) || empty($value)) {
                     continue;
                 }
-                $logData[$key] = [
+                $logData[$key] = $this->redactIfProtected($key, [
                     'old_value' => '',
                     'new_value' => $this->prepareValue($value)
-                ];
+                ]);
             }
         }
         return $logData;
@@ -130,10 +138,10 @@ class FieldTracker implements FieldTrackerInterface
                 $oldData = $this->normalizeValue($model->getOrigData($key));
                 if ($newData !== '' || $oldData !== '') {
                     if ($newData !== $oldData) {
-                        $logData[$key] = [
+                        $logData[$key] = $this->redactIfProtected($key, [
                             'old_value' => $this->prepareValue($oldData),
                             'new_value' => $this->prepareValue($newData)
-                        ];
+                        ]);
                     }
                 }
             }
@@ -155,10 +163,10 @@ class FieldTracker implements FieldTrackerInterface
                 if ($this->validateValue($model, $key, $value, $fieldArray) || empty($value)) {
                     continue;
                 }
-                $logData[$key] = [
+                $logData[$key] = $this->redactIfProtected($key, [
                     'old_value' => $this->prepareValue($value),
                     'new_value' => ''
-                ];
+                ]);
             }
         }
         return $logData;
@@ -292,5 +300,29 @@ class FieldTracker implements FieldTrackerInterface
         }
 
         return $this->truncateValue($value);
+    }
+
+    /**
+     * Replace values with a redacted placeholder if the field is protected
+     *
+     * Empty strings are preserved so add/delete action semantics remain clear
+     * (add has old_value='', delete has new_value='').
+     *
+     * @param string $fieldName Field name to check
+     * @param array{old_value: string, new_value: string} $entry Log entry
+     * @return array{old_value: string, new_value: string}
+     */
+    private function redactIfProtected(string $fieldName, array $entry): array
+    {
+        if ($this->fieldChecker->isFieldProtected($fieldName)) {
+            if ($entry['old_value'] !== '') {
+                $entry['old_value'] = self::REDACTED_VALUE;
+            }
+            if ($entry['new_value'] !== '') {
+                $entry['new_value'] = self::REDACTED_VALUE;
+            }
+        }
+
+        return $entry;
     }
 }

@@ -15,6 +15,7 @@ namespace MageOS\AdminActivityLog\Test\Unit\Model\Activity;
 
 use Magento\Framework\DataObject;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
+use MageOS\AdminActivityLog\Api\FieldCheckerInterface;
 use MageOS\AdminActivityLog\Model\Activity\FieldTracker;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
 use MageOS\AdminActivityLog\Model\Activity\ThemeConfig;
@@ -29,6 +30,7 @@ class FieldTrackerTest extends TestCase
     private ThemeConfig&MockObject $themeConfig;
     private Config&MockObject $config;
     private ActivityConfigInterface&MockObject $activityConfig;
+    private FieldCheckerInterface&MockObject $fieldChecker;
     private FieldTracker $fieldTracker;
 
     protected function setUp(): void
@@ -37,12 +39,15 @@ class FieldTrackerTest extends TestCase
         $this->themeConfig = $this->createMock(ThemeConfig::class);
         $this->config = $this->createMock(Config::class);
         $this->activityConfig = $this->createMock(ActivityConfigInterface::class);
+        $this->fieldChecker = $this->createMock(FieldCheckerInterface::class);
+        $this->fieldChecker->method('isFieldProtected')->willReturn(false);
 
         $this->fieldTracker = new FieldTracker(
             $this->systemConfig,
             $this->themeConfig,
             $this->config,
-            $this->activityConfig
+            $this->activityConfig,
+            $this->fieldChecker
         );
     }
 
@@ -412,5 +417,80 @@ class FieldTrackerTest extends TestCase
 
         $this->assertSame('Test Product', $result['name']['old_value']);
         $this->assertSame('', $result['name']['new_value']);
+    }
+
+    // --- Sensitive field redaction ---
+
+    public function testGetAddDataRedactsProtectedField(): void
+    {
+        $fieldChecker = $this->createMock(FieldCheckerInterface::class);
+        $fieldChecker->method('isFieldProtected')
+            ->willReturnCallback(fn(string $name) => $name === 'password');
+
+        $tracker = new FieldTracker(
+            $this->systemConfig,
+            $this->themeConfig,
+            $this->config,
+            $this->activityConfig,
+            $fieldChecker
+        );
+
+        $model = new DataObject(['password' => 'secret123', 'name' => 'Test']);
+
+        $result = $tracker->getAddData($model, []);
+
+        $this->assertSame('******', $result['password']['new_value']);
+        $this->assertSame('', $result['password']['old_value']);
+        $this->assertSame('Test', $result['name']['new_value']);
+    }
+
+    public function testGetEditDataRedactsProtectedField(): void
+    {
+        $this->config->method('getGlobalSkipEditFields')->willReturn([]);
+        $this->activityConfig->method('isWildCardModel')->willReturn(false);
+
+        $fieldChecker = $this->createMock(FieldCheckerInterface::class);
+        $fieldChecker->method('isFieldProtected')
+            ->willReturnCallback(fn(string $name) => $name === 'api_key');
+
+        $tracker = new FieldTracker(
+            $this->systemConfig,
+            $this->themeConfig,
+            $this->config,
+            $this->activityConfig,
+            $fieldChecker
+        );
+
+        $model = new DataObject(['api_key' => 'new-key-456']);
+        $model->setOrigData(['api_key' => 'old-key-123']);
+
+        $result = $tracker->getEditData($model, []);
+
+        $this->assertSame('******', $result['api_key']['old_value']);
+        $this->assertSame('******', $result['api_key']['new_value']);
+    }
+
+    public function testGetDeleteDataRedactsProtectedField(): void
+    {
+        $fieldChecker = $this->createMock(FieldCheckerInterface::class);
+        $fieldChecker->method('isFieldProtected')
+            ->willReturnCallback(fn(string $name) => $name === 'cc_number');
+
+        $tracker = new FieldTracker(
+            $this->systemConfig,
+            $this->themeConfig,
+            $this->config,
+            $this->activityConfig,
+            $fieldChecker
+        );
+
+        $model = new DataObject([]);
+        $model->setOrigData(['cc_number' => '4111111111111111', 'name' => 'Test']);
+
+        $result = $tracker->getDeleteData($model, []);
+
+        $this->assertSame('******', $result['cc_number']['old_value']);
+        $this->assertSame('', $result['cc_number']['new_value']);
+        $this->assertSame('Test', $result['name']['old_value']);
     }
 }
