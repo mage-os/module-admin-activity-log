@@ -562,16 +562,6 @@ class Processor
         return $this->requestContext->getRemoteAddress();
     }
 
-    public function getRequestContext(): RequestContext
-    {
-        return $this->requestContext;
-    }
-
-    public function getActivityContext(): ActivityContext
-    {
-        return $this->activityContext;
-    }
-
     /**
      * Sanitize and validate X-Forwarded-For header value
      *
