@@ -16,19 +16,20 @@ namespace MageOS\AdminActivityLog\Controller\Adminhtml\Login;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Page;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Class Index
  * @package MageOS\AdminActivityLog\Controller\Adminhtml\Login
  */
-class Index extends Action
+class Index extends Action implements HttpGetActionInterface
 {
     public const ADMIN_RESOURCE = 'MageOS_AdminActivityLog::login_activity';
 
     public function __construct(
         Context $context,
-        protected readonly PageFactory $resultPageFactory
+        private readonly PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
     }
