@@ -21,14 +21,19 @@ use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
+use MageOS\AdminActivityLog\Model\Activity;
+use MageOS\AdminActivityLog\Model\ActivityLog;
+use MageOS\AdminActivityLog\Model\ActivityLogDetail;
 use MageOS\AdminActivityLog\Model\Config;
 use MageOS\AdminActivityLog\Model\Handler;
 use MageOS\AdminActivityLog\Model\Handler\PostDispatch;
 use MageOS\AdminActivityLog\Model\Processor;
 use MageOS\AdminActivityLog\Model\Processor\ActivityContext;
 use MageOS\AdminActivityLog\Model\Processor\RequestContext;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class ProcessorTest extends TestCase
 {
@@ -548,5 +553,173 @@ class ProcessorTest extends TestCase
         $result = $this->processor->getStoreId($model);
 
         $this->assertSame(7, $result);
+    }
+
+    public function testSaveLogsReturnsTrueWhenQueueIsEmpty(): void
+    {
+        $result = $this->processor->saveLogs();
+
+        $this->assertTrue($result);
+    }
+
+    public function testSaveLogsCommitsTransactionOnSuccess(): void
+    {
+        $connection = $this->createMock(AdapterInterface::class);
+        $this->activityContext->method('getConnection')->willReturn($connection);
+
+        $activity = $this->getMockBuilder(Activity::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['save', 'getId'])
+            ->getMock();
+        $activity->method('save')->willReturnSelf();
+        $activity->method('getId')->willReturn(1);
+
+        $this->processor->addActivityLog([
+            Activity::class => $activity,
+            ActivityLog::class => [],
+        ]);
+
+        $connection->expects($this->once())->method('beginTransaction');
+        $connection->expects($this->once())->method('commit');
+        $connection->expects($this->never())->method('rollBack');
+
+        $result = $this->processor->saveLogs();
+
+        $this->assertTrue($result);
+    }
+
+    public function testSaveLogsRollsBackAndReturnsFalseOnException(): void
+    {
+        $connection = $this->createMock(AdapterInterface::class);
+        $this->activityContext->method('getConnection')->willReturn($connection);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $this->activityContext->method('getLogger')->willReturn($logger);
+
+        $activity = $this->getMockBuilder(Activity::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['save', 'getId'])
+            ->getMock();
+        $activity->method('save')->willThrowException(new \Exception('DB error'));
+
+        $this->processor->addActivityLog([
+            Activity::class => $activity,
+        ]);
+
+        $connection->expects($this->once())->method('beginTransaction');
+        $connection->expects($this->once())->method('rollBack');
+        $connection->expects($this->never())->method('commit');
+        $logger->expects($this->once())->method('error');
+
+        $result = $this->processor->saveLogs();
+
+        $this->assertFalse($result);
+    }
+
+    public function testSaveLogsBatchInsertsActivityLogRecords(): void
+    {
+        $connection = $this->createMock(AdapterInterface::class);
+        $this->activityContext->method('getConnection')->willReturn($connection);
+        $this->activityContext->method('getTableName')
+            ->with('admin_activity_log')
+            ->willReturn('admin_activity_log');
+
+        $activity = $this->getMockBuilder(Activity::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['save', 'getId'])
+            ->getMock();
+        $activity->method('save')->willReturnSelf();
+        $activity->method('getId')->willReturn(42);
+
+        $log1 = $this->getMockBuilder(ActivityLog::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getFieldName', 'getOldValue', 'getNewValue'])
+            ->getMock();
+        $log1->method('getFieldName')->willReturn('name');
+        $log1->method('getOldValue')->willReturn('Old Name');
+        $log1->method('getNewValue')->willReturn('New Name');
+
+        $log2 = $this->getMockBuilder(ActivityLog::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getFieldName', 'getOldValue', 'getNewValue'])
+            ->getMock();
+        $log2->method('getFieldName')->willReturn('status');
+        $log2->method('getOldValue')->willReturn('0');
+        $log2->method('getNewValue')->willReturn('1');
+
+        $this->processor->addActivityLog([
+            Activity::class => $activity,
+            ActivityLog::class => [$log1, $log2],
+        ]);
+
+        $connection->expects($this->once())
+            ->method('insertMultiple')
+            ->with('admin_activity_log', [
+                [
+                    'activity_id' => 42,
+                    'field_name' => 'name',
+                    'old_value' => 'Old Name',
+                    'new_value' => 'New Name',
+                ],
+                [
+                    'activity_id' => 42,
+                    'field_name' => 'status',
+                    'old_value' => '0',
+                    'new_value' => '1',
+                ],
+            ]);
+
+        $this->processor->saveLogs();
+    }
+
+    public function testModelAddAfterSkipsWhenValidationFails(): void
+    {
+        $model = new DataObject();
+
+        $this->handler->expects($this->never())->method('modelAdd');
+
+        $result = $this->processor->modelAddAfter($model);
+
+        $this->assertSame($this->processor, $result);
+    }
+
+    public function testModelDeleteAfterSkipsWhenValidationFails(): void
+    {
+        $model = new DataObject();
+
+        $this->handler->expects($this->never())->method('modelDelete');
+
+        $result = $this->processor->modelDeleteAfter($model);
+
+        $this->assertSame($this->processor, $result);
+    }
+
+    public function testCallPostDispatchCallbackReturnsFalseWhenNoEventConfig(): void
+    {
+        $result = $this->processor->callPostDispatchCallback();
+
+        $this->assertFalse($result);
+    }
+
+    public function testAddActivityLogQueuesEntry(): void
+    {
+        $connection = $this->createMock(AdapterInterface::class);
+        $this->activityContext->method('getConnection')->willReturn($connection);
+
+        $activity = $this->getMockBuilder(Activity::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['save', 'getId'])
+            ->getMock();
+        $activity->method('save')->willReturnSelf();
+        $activity->method('getId')->willReturn(1);
+
+        $this->processor->addActivityLog([
+            Activity::class => $activity,
+            ActivityLog::class => [],
+        ]);
+
+        $connection->expects($this->once())->method('beginTransaction');
+
+        $this->processor->saveLogs();
     }
 }
