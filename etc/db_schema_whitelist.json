@@ -64,6 +64,7 @@
     "admin_login_log": {
         "column": {
             "entity_id": true,
+            "admin_id": true,
             "username": true,
             "name": true,
             "remote_ip": true,
@@ -78,7 +79,8 @@
             "ADMIN_LOGIN_LOG_CREATED_AT": true,
             "ADMIN_LOGIN_LOG_USERNAME": true,
             "ADMIN_LOGIN_LOG_STATUS": true,
-            "ADMIN_LOGIN_LOG_TYPE": true
+            "ADMIN_LOGIN_LOG_TYPE": true,
+            "ADMIN_LOGIN_LOG_ADMIN_ID": true
         },
         "constraint": {
             "PRIMARY": true
