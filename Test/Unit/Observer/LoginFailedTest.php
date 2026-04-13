@@ -14,6 +14,7 @@ namespace MageOS\AdminActivityLog\Test\Unit\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\User\Model\User;
+use Magento\User\Model\UserFactory;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\LoginRepositoryInterface;
 use MageOS\AdminActivityLog\Observer\LoginFailed;
@@ -25,6 +26,7 @@ class LoginFailedTest extends TestCase
 {
     private ActivityConfigInterface&MockObject $activityConfig;
     private LoggerInterface&MockObject $logger;
+    private UserFactory&MockObject $userFactory;
     private User&MockObject $user;
     private LoginRepositoryInterface&MockObject $loginRepository;
     private LoginFailed $subject;
@@ -34,12 +36,14 @@ class LoginFailedTest extends TestCase
         $this->activityConfig = $this->createMock(ActivityConfigInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->user = $this->createMock(User::class);
+        $this->userFactory = $this->createMock(UserFactory::class);
+        $this->userFactory->method('create')->willReturn($this->user);
         $this->loginRepository = $this->createMock(LoginRepositoryInterface::class);
 
         $this->subject = new LoginFailed(
             $this->activityConfig,
             $this->logger,
-            $this->user,
+            $this->userFactory,
             $this->loginRepository
         );
     }

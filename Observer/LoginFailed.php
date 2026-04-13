@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Observer;
 
 use Magento\Framework\Event\Observer;
-use Magento\User\Model\User;
+use Magento\User\Model\UserFactory;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\LoginRepositoryInterface;
 use Psr\Log\LoggerInterface;
@@ -24,7 +24,7 @@ class LoginFailed extends AbstractActivityObserver
     public function __construct(
         ActivityConfigInterface $activityConfig,
         LoggerInterface $logger,
-        private readonly User $user,
+        private readonly UserFactory $userFactory,
         private readonly LoginRepositoryInterface $loginRepository
     ) {
         parent::__construct($activityConfig, $logger);
@@ -37,10 +37,10 @@ class LoginFailed extends AbstractActivityObserver
 
     protected function process(Observer $observer): void
     {
-        $user = $this->user;
+        $user = $this->userFactory->create();
         $user->setUserName($observer->getUserName());
         if ($observer->getUserName()) {
-            $user = $this->user->loadByUsername($observer->getUserName());
+            $user = $user->loadByUsername($observer->getUserName());
         }
 
         $this->loginRepository->setUser($user)
