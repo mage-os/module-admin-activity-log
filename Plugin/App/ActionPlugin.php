@@ -15,6 +15,7 @@ namespace MageOS\AdminActivityLog\Plugin\App;
 
 use Magento\Framework\App\Action\AbstractAction;
 use MageOS\AdminActivityLog\Model\Processor;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Action
@@ -23,20 +24,30 @@ use MageOS\AdminActivityLog\Model\Processor;
 class ActionPlugin
 {
     public function __construct(
-        private readonly Processor $processor
+        private readonly Processor $processor,
+        private readonly LoggerInterface $logger
     ) {
     }
 
     /**
      * Get before dispatch data
+     *
+     * Wrapped in try/catch so activity logging never blocks admin dispatch.
      */
     public function beforeDispatch(
         AbstractAction $subject
     ): void {
-        $actionName = $subject->getRequest()->getActionName();
-        $fullActionName = $subject->getRequest()->getFullActionName();
+        try {
+            $actionName = $subject->getRequest()->getActionName();
+            $fullActionName = $subject->getRequest()->getFullActionName();
 
-        $this->processor->init($fullActionName, $actionName);
-        $this->processor->addPageVisitLog($subject->getRequest()->getModuleName());
+            $this->processor->init($fullActionName, $actionName);
+            $this->processor->addPageVisitLog($subject->getRequest()->getModuleName());
+        } catch (\Throwable $e) {
+            $this->logger->error('Admin activity plugin failed', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
 }

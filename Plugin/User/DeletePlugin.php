@@ -15,6 +15,7 @@ namespace MageOS\AdminActivityLog\Plugin\User;
 
 use Magento\Framework\Model\AbstractModel;
 use Magento\User\Model\ResourceModel\User;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Delete
@@ -22,8 +23,26 @@ use Magento\User\Model\ResourceModel\User;
  */
 class DeletePlugin
 {
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {
+    }
+
+    /**
+     * Reload user data before delete so the DeleteAfter observer can log field values.
+     *
+     * Wrapped in try/catch so activity logging never blocks user deletion.
+     */
     public function beforeDelete(User $subject, AbstractModel $user): void
     {
-        $user->load($user->getId());
+        try {
+            $user->load($user->getId());
+        } catch (\Throwable $e) {
+            $this->logger->error('Admin activity pre-delete user load failed', [
+                'user_id' => $user->getId(),
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
 }
