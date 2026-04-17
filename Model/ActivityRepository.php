@@ -101,7 +101,12 @@ class ActivityRepository implements ActivityRepositoryInterface
             return false;
         }
 
-        $data = $this->modelResolver->loadModel($className, $model->getId());
+        $entityId = $model->getId();
+        if ($entityId === null) {
+            return false;
+        }
+
+        $data = $this->modelResolver->loadModel($className, $entityId);
         if ($data->getId()) {
             return $data;
         }
