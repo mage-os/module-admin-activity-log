@@ -119,7 +119,7 @@ class ThemeConfig implements ModelInterface
     }
 
     /**
-     * Normalize a scalar value to a string for comparison
+     * Normalize a value to a string for comparison
      *
      * @param mixed $value Raw value
      * @return string Normalized string
@@ -130,6 +130,42 @@ class ThemeConfig implements ModelInterface
             return '';
         }
 
+        if (is_array($value)) {
+            return $this->flattenValue($value);
+        }
+
         return (string)$value;
+    }
+
+    /**
+     * Flatten an array posted by the design config form to a comparable string
+     *
+     * Image uploader fields (favicon, logos) post a list of file descriptors
+     * rather than a scalar; only the file name of those ends up in
+     * core_config_data, so compare on that.
+     *
+     * @param array<mixed> $value Raw value
+     * @return string Normalized string
+     */
+    private function flattenValue(array $value): string
+    {
+        if (!array_is_list($value)) {
+            return (string)json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+
+        $parts = [];
+        foreach ($value as $item) {
+            if (!is_array($item)) {
+                $parts[] = (string)$item;
+                continue;
+            }
+
+            $file = $item['file'] ?? $item['name'] ?? null;
+            $parts[] = $file === null
+                ? (string)json_encode($item, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                : (string)$file;
+        }
+
+        return implode(',', $parts);
     }
 }
