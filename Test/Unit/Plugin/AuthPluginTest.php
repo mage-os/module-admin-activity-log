@@ -77,6 +77,26 @@ class AuthPluginTest extends TestCase
         $this->plugin->beforeLogout($this->auth);
     }
 
+    public function testBeforeLogoutSkipsWhenSessionHasNoUser(): void
+    {
+        $this->activityConfig->method('isLoginEnabled')->willReturn(true);
+
+        $session = $this->getMockBuilder(Session::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['getUser'])
+            ->getMock();
+        $session->method('getUser')->willReturn(null);
+        $this->auth->method('getAuthStorage')->willReturn($session);
+
+        $this->loginRepository->expects($this->never())
+            ->method('setUser');
+
+        $this->logger->expects($this->never())
+            ->method('error');
+
+        $this->plugin->beforeLogout($this->auth);
+    }
+
     public function testBeforeLogoutSwallowsExceptionFromAuthStorage(): void
     {
         $this->activityConfig->method('isLoginEnabled')->willReturn(true);

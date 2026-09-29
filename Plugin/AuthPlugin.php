@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Plugin;
 
 use Magento\Backend\Model\Auth;
+use Magento\User\Model\User;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\LoginRepositoryInterface;
 use Psr\Log\LoggerInterface;
@@ -41,7 +42,10 @@ class AuthPlugin
         try {
             if ($this->activityConfig->isLoginEnabled()) {
                 $user = $auth->getAuthStorage()->getUser();
-                $this->loginRepository->setUser($user)->addLogoutLog();
+                // An expired admin session still reaches logout, but holds no user to attribute it to.
+                if ($user instanceof User) {
+                    $this->loginRepository->setUser($user)->addLogoutLog();
+                }
             }
         } catch (\Throwable $e) {
             $this->logger->error('Admin activity logout logging failed', [
