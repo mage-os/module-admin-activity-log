@@ -26,9 +26,13 @@ class ThemeConfigTest extends TestCase
     }
 
     /**
-     * Build a config value model the way BackendModelFactory does for a stored field
+     * Build a config value model as it reaches SaveAfter for an existing row
      *
-     * @param mixed $storedValue Value held in core_config_data, null if no row exists
+     * Mirrors BackendModelFactory (stored row and field config in orig data,
+     * field name in field_config) and SaveBefore, which merges the section's
+     * config groups from SystemConfig::getOldData() into orig data.
+     *
+     * @param mixed $storedValue Value of the core_config_data row (may be NULL)
      * @param mixed $newValue Value after the backend model's beforeSave()
      */
     private function createValueModel(
@@ -36,21 +40,31 @@ class ThemeConfigTest extends TestCase
         mixed $storedValue,
         mixed $newValue,
         string $scope = 'stores',
-        int $scopeId = 1
+        int $scopeId = 1,
+        ?string $fieldName = null
     ): Value {
+        $fieldConfig = [
+            'path' => $path,
+            'field' => $fieldName ?? str_replace('/', '_', substr($path, strlen('design/'))),
+        ];
+        $storedRow = [
+            'config_id' => 42,
+            'scope' => $scope,
+            'scope_id' => $scopeId,
+            'path' => $path,
+            'value' => $storedValue,
+        ];
+
         $model = $this->getMockBuilder(Value::class)
             ->disableOriginalConstructor()
             ->onlyMethods([])
             ->getMock();
-        $model->setData([
-            'path' => $path,
-            'scope' => $scope,
-            'scope_id' => $scopeId,
-            'value' => $newValue,
-        ]);
-        if ($storedValue !== null) {
-            $model->setOrigData('value', $storedValue);
+        $model->setData(array_merge($storedRow, ['field_config' => $fieldConfig, 'value' => $newValue]));
+        foreach ($storedRow as $key => $value) {
+            $model->setOrigData($key, $value);
         }
+        $model->setOrigData('field_config', $fieldConfig);
+        $model->setOrigData('head', ['fields' => ['default_title' => ['value' => 'Other scope title']]]);
 
         return $model;
     }
@@ -121,8 +135,9 @@ class ThemeConfigTest extends TestCase
         $this->assertSame([], $this->themeConfig->getEditData($model, []));
     }
 
-    public function testGetEditDataIgnoresMissingStoredValueVsEmptyString(): void
+    public function testGetEditDataIgnoresNullRowRepostedAsEmptyString(): void
     {
+        // Storage::load() turns NULL into '', so the form re-posts '' and the row is saved
         $model = $this->createValueModel('design/footer/absolute_footer', null, '');
 
         $this->assertSame([], $this->themeConfig->getEditData($model, []));
@@ -135,14 +150,32 @@ class ThemeConfigTest extends TestCase
         $this->assertNotEmpty($this->themeConfig->getEditData($model, []));
     }
 
-    public function testGetEditDataHandlesMissingStoredValue(): void
+    public function testGetEditDataDetectsChangeFromNullRow(): void
     {
         $model = $this->createValueModel('design/header/welcome', null, 'Hello');
 
         $result = $this->themeConfig->getEditData($model, []);
 
-        $this->assertSame('', $result['design/header/welcome']['old_value']);
-        $this->assertSame('Hello', $result['design/header/welcome']['new_value']);
+        $this->assertSame(['old_value' => '', 'new_value' => 'Hello'], $result['design/header/welcome']);
+    }
+
+    public function testGetEditDataSkipsFieldByFormNameNotDerivableFromPath(): void
+    {
+        $model = $this->createValueModel(
+            'design/search_engine_robots/default_robots',
+            'INDEX,FOLLOW',
+            'NOINDEX,NOFOLLOW',
+            fieldName: 'default_robots'
+        );
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, ['default_robots']));
+    }
+
+    public function testGetEditDataIgnoresConfigGroupsMergedIntoOrigData(): void
+    {
+        $model = $this->createValueModel('design/head/default_title', 'Stored title', 'Stored title');
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, []));
     }
 
     public function testGetEditDataEncodesArrayValue(): void

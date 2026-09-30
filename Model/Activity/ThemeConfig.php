@@ -57,8 +57,7 @@ class ThemeConfig implements ModelInterface
         $model->setId($model->getScope() . '/scope_id/' . $model->getScopeId());
 
         $path = (string)$model->getData('path');
-        $fieldName = str_replace('/', '_', preg_replace('#^design/#', '', $path));
-        if (in_array($fieldName, $fieldArray, true)) {
+        if (in_array($this->getFieldName($model, $path), $fieldArray, true)) {
             return [];
         }
 
@@ -74,6 +73,23 @@ class ThemeConfig implements ModelInterface
                 'new_value' => $newValue
             ]
         ];
+    }
+
+    /**
+     * Get the design config form field name, as used in skip_fields
+     *
+     * Magento\Theme\Model\Data\Design\ConfigFactory stores it in the field
+     * config; it is not always derivable from the path (e.g. default_robots
+     * for design/search_engine_robots/default_robots).
+     */
+    private function getFieldName(DataObject $model, string $path): string
+    {
+        $fieldConfig = $model->getData('field_config');
+        if (is_array($fieldConfig) && is_string($fieldConfig['field'] ?? null)) {
+            return $fieldConfig['field'];
+        }
+
+        return str_replace('/', '_', (string)preg_replace('#^design/#', '', $path));
     }
 
     /**
