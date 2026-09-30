@@ -124,4 +124,143 @@ class ThemeConfigTest extends TestCase
 
         $this->assertEmpty($result);
     }
+
+    // --- collectAdditionalData: image uploader fields posting file descriptors ---
+
+    public function testCollectAdditionalDataIgnoresUntouchedImageUploaderField(): void
+    {
+        $oldData = ['header_logo_src' => 'stores/1/logo.png'];
+        $newData = ['header_logo_src' => [
+            [
+                'url' => 'https://example.com/media/logo/stores/1/logo.png',
+                'file' => 'stores/1/logo.png',
+                'name' => 'logo.png',
+                'size' => 1234,
+            ]
+        ]];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertEmpty($result, 'Re-posting an unchanged image descriptor is not a change');
+    }
+
+    public function testCollectAdditionalDataFallsBackToDescriptorNameWhenFileMissing(): void
+    {
+        $oldData = ['head_shortcut_icon' => 'favicon.png'];
+        $newData = ['head_shortcut_icon' => [
+            ['name' => 'favicon.png', 'url' => 'https://example.com/media/favicon.png']
+        ]];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertEmpty($result);
+    }
+
+    public function testCollectAdditionalDataDetectsReplacedImage(): void
+    {
+        $oldData = ['header_logo_src' => 'old-logo.png'];
+        $newData = ['header_logo_src' => [
+            ['file' => 'new-logo.png', 'name' => 'new-logo.png', 'size' => 99]
+        ]];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertArrayHasKey('design/header/logo_src', $result);
+        $this->assertSame('old-logo.png', $result['design/header/logo_src']['old_value']);
+        $this->assertSame('new-logo.png', $result['design/header/logo_src']['new_value']);
+    }
+
+    public function testCollectAdditionalDataDetectsClearedImage(): void
+    {
+        $oldData = ['header_logo_src' => 'logo.png'];
+        $newData = ['header_logo_src' => []];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertArrayHasKey('design/header/logo_src', $result);
+        $this->assertSame('logo.png', $result['design/header/logo_src']['old_value']);
+        $this->assertSame('', $result['design/header/logo_src']['new_value']);
+    }
+
+    public function testCollectAdditionalDataJoinsListOfScalars(): void
+    {
+        $oldData = ['watermark_image_size' => 'a,b'];
+        $newData = ['watermark_image_size' => ['a', 'b']];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertEmpty($result);
+    }
+
+    public function testCollectAdditionalDataEncodesAssociativeArray(): void
+    {
+        $oldData = ['header_logo_src' => 'logo.png'];
+        $newData = ['header_logo_src' => ['delete' => '1', 'value' => 'logo.png']];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertArrayHasKey('design/header/logo_src', $result);
+        $this->assertSame(
+            '{"delete":"1","value":"logo.png"}',
+            $result['design/header/logo_src']['new_value']
+        );
+    }
+
+    /**
+     * A hand-crafted POST can nest arrays arbitrarily deep. The cast must not
+     * raise "Array to string conversion": with swissup/module-ignition
+     * installed that warning becomes an ErrorException, SaveAfter aborts and
+     * the activity is never logged.
+     */
+    public function testCollectAdditionalDataHandlesNestedArrayInDescriptor(): void
+    {
+        $oldData = ['header_logo_src' => 'logo.png'];
+        $newData = ['header_logo_src' => [['file' => ['nested'], 'name' => ['nested']]]];
+
+        $warnings = [];
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$warnings): bool {
+                $warnings[] = $errstr;
+                return true;
+            },
+            E_WARNING | E_NOTICE
+        );
+
+        try {
+            $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $warnings, 'Flattening must not raise a PHP warning');
+        $this->assertArrayHasKey('design/header/logo_src', $result);
+        $this->assertSame(
+            '{"file":["nested"],"name":["nested"]}',
+            $result['design/header/logo_src']['new_value']
+        );
+    }
+
+    public function testCollectAdditionalDataUsesPlaceholderForUnserializableValue(): void
+    {
+        $oldData = ['header_logo_src' => 'logo.png'];
+        $newData = ['header_logo_src' => ['broken' => "\xB1\x31"]];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertArrayHasKey('design/header/logo_src', $result);
+        $this->assertSame('[unserializable]', $result['design/header/logo_src']['new_value']);
+    }
+
+    public function testCollectAdditionalDataDoesNotEscapeSlashesInEncodedValue(): void
+    {
+        $oldData = [];
+        $newData = ['header_logo_src' => ['path' => 'stores/1/logo.png']];
+
+        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+
+        $this->assertSame(
+            '{"path":"stores/1/logo.png"}',
+            $result['design/header/logo_src']['new_value']
+        );
+    }
 }

@@ -28,6 +28,11 @@ class SystemConfig implements ModelInterface
 {
     public const MODULE_SYSTEM_CONFIGURATION = 'system_configuration';
 
+    /**
+     * Placeholder for values that cannot be JSON encoded
+     */
+    private const UNSERIALIZABLE_VALUE = '[unserializable]';
+
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ValueFactory $valueFactory,
@@ -155,6 +160,8 @@ class SystemConfig implements ModelInterface
             return implode(',', $value);
         }
 
-        return (string)json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $encoded = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return $encoded === false ? self::UNSERIALIZABLE_VALUE : $encoded;
     }
 }

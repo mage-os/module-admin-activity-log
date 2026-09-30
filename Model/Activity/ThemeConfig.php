@@ -25,6 +25,11 @@ use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
  */
 class ThemeConfig implements ModelInterface
 {
+    /**
+     * Placeholder for values that cannot be JSON encoded
+     */
+    private const UNSERIALIZABLE_VALUE = '[unserializable]';
+
     public function __construct(
         protected readonly DataObject $dataObject,
         protected readonly ConfigCollectionFactory $configCollectionFactory,
@@ -119,7 +124,7 @@ class ThemeConfig implements ModelInterface
     }
 
     /**
-     * Normalize a scalar value to a string for comparison
+     * Normalize a value to a string for comparison
      *
      * @param mixed $value Raw value
      * @return string Normalized string
@@ -130,6 +135,58 @@ class ThemeConfig implements ModelInterface
             return '';
         }
 
+        if (is_array($value)) {
+            return $this->flattenPostedValue($value);
+        }
+
         return (string)$value;
+    }
+
+    /**
+     * Flatten an array posted by the design config form to a comparable string
+     *
+     * Image uploader fields (favicon, logos) post a list of file descriptors
+     * rather than a scalar; Theme\Model\Design\Backend\File::afterLoad() puts the
+     * stored config value in the descriptor's "file" key and its basename in
+     * "name", so prefer "file" to compare against core_config_data.
+     *
+     * Deliberately not the same as the sibling SystemConfig::flattenValue():
+     * that one sees backend model values rather than posted form data and has
+     * no file descriptors to unwrap.
+     *
+     * @param array<mixed> $value Raw value
+     * @return string Normalized string
+     */
+    private function flattenPostedValue(array $value): string
+    {
+        if (!array_is_list($value)) {
+            return $this->encodeValue($value);
+        }
+
+        $parts = [];
+        foreach ($value as $item) {
+            if (!is_array($item)) {
+                $parts[] = is_scalar($item) ? (string)$item : $this->encodeValue($item);
+                continue;
+            }
+
+            $file = $item['file'] ?? $item['name'] ?? null;
+            $parts[] = is_scalar($file) ? (string)$file : $this->encodeValue($item);
+        }
+
+        return implode(',', $parts);
+    }
+
+    /**
+     * Encode a value that has no meaningful scalar representation
+     *
+     * @param mixed $value Raw value
+     * @return string Encoded value, or a placeholder if it cannot be encoded
+     */
+    private function encodeValue(mixed $value): string
+    {
+        $encoded = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return $encoded === false ? self::UNSERIALIZABLE_VALUE : $encoded;
     }
 }

@@ -215,4 +215,24 @@ class SystemConfigTest extends TestCase
         $this->assertArrayHasKey('general/country/allow', $result);
         $this->assertSame('{"key":"value"}', $result['general/country/allow']['new_value']);
     }
+
+    public function testGetEditDataUsesPlaceholderForUnserializableValue(): void
+    {
+        $model = new DataObject([
+            'path' => 'general/country/allow',
+            'value' => ['broken' => "\xB1\x31"],
+        ]);
+        $model->setOrigData([
+            'country' => [
+                'fields' => [
+                    'allow' => ['value' => 'old'],
+                ],
+            ],
+        ]);
+
+        $result = $this->systemConfig->getEditData($model, []);
+
+        $this->assertArrayHasKey('general/country/allow', $result);
+        $this->assertSame('[unserializable]', $result['general/country/allow']['new_value']);
+    }
 }
