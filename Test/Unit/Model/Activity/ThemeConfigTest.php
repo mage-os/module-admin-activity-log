@@ -14,253 +14,194 @@ namespace MageOS\AdminActivityLog\Test\Unit\Model\Activity;
 
 use PHPUnit\Framework\TestCase;
 use MageOS\AdminActivityLog\Model\Activity\ThemeConfig;
-use Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory as ConfigCollectionFactory;
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\DataObject;
-use PHPUnit\Framework\MockObject\MockObject;
+use Magento\Framework\App\Config\Value;
 
 class ThemeConfigTest extends TestCase
 {
-    private ConfigCollectionFactory&MockObject $configCollectionFactory;
-    private RequestInterface&MockObject $request;
     private ThemeConfig $themeConfig;
 
     protected function setUp(): void
     {
-        $this->configCollectionFactory = $this->createMock(ConfigCollectionFactory::class);
-        $this->request = $this->createMock(RequestInterface::class);
-
-        $this->themeConfig = new ThemeConfig(
-            new DataObject(),
-            $this->configCollectionFactory,
-            $this->request
-        );
-    }
-
-    // --- collectAdditionalData: happy path ---
-
-    public function testCollectAdditionalDataDetectsGenuineChange(): void
-    {
-        $oldData = ['header_default_title' => 'Old Title'];
-        $newData = ['header_default_title' => 'New Title'];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertArrayHasKey('design/header/default_title', $result);
-        $this->assertSame('Old Title', $result['design/header/default_title']['old_value']);
-        $this->assertSame('New Title', $result['design/header/default_title']['new_value']);
-    }
-
-    public function testCollectAdditionalDataIgnoresUnchangedField(): void
-    {
-        $oldData = ['header_default_title' => 'Same'];
-        $newData = ['header_default_title' => 'Same'];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result);
-    }
-
-    public function testCollectAdditionalDataSkipsFieldsInFieldArray(): void
-    {
-        $oldData = ['header_default_title' => 'Old'];
-        $newData = ['header_default_title' => 'New'];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, ['header_default_title']);
-
-        $this->assertEmpty($result);
-    }
-
-    // --- collectAdditionalData: edge/boundary cases ---
-
-    public function testCollectAdditionalDataIgnoresIntZeroVsStringZero(): void
-    {
-        $oldData = ['footer_absolute_footer' => 0];
-        $newData = ['footer_absolute_footer' => '0'];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result, 'int 0 vs string "0" should not be a change');
-    }
-
-    public function testCollectAdditionalDataIgnoresNullVsEmptyString(): void
-    {
-        $oldData = ['footer_absolute_footer' => null];
-        $newData = ['footer_absolute_footer' => ''];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result, 'null vs empty string should not be a change');
-    }
-
-    public function testCollectAdditionalDataDetectsZeroToOneChange(): void
-    {
-        $oldData = ['footer_absolute_footer' => 0];
-        $newData = ['footer_absolute_footer' => '1'];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertNotEmpty($result, 'Change from 0 to 1 must be detected');
-    }
-
-    public function testCollectAdditionalDataHandlesMissingOldKey(): void
-    {
-        $oldData = [];
-        $newData = ['header_new_field' => 'value'];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertArrayHasKey('design/header/new_field', $result);
-        $this->assertSame('', $result['design/header/new_field']['old_value']);
-        $this->assertSame('value', $result['design/header/new_field']['new_value']);
-    }
-
-    public function testCollectAdditionalDataIgnoresBothEmpty(): void
-    {
-        $oldData = ['footer_absolute_footer' => ''];
-        $newData = ['footer_absolute_footer' => ''];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result);
-    }
-
-    // --- collectAdditionalData: image uploader fields posting file descriptors ---
-
-    public function testCollectAdditionalDataIgnoresUntouchedImageUploaderField(): void
-    {
-        $oldData = ['header_logo_src' => 'stores/1/logo.png'];
-        $newData = ['header_logo_src' => [
-            [
-                'url' => 'https://example.com/media/logo/stores/1/logo.png',
-                'file' => 'stores/1/logo.png',
-                'name' => 'logo.png',
-                'size' => 1234,
-            ]
-        ]];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result, 'Re-posting an unchanged image descriptor is not a change');
-    }
-
-    public function testCollectAdditionalDataFallsBackToDescriptorNameWhenFileMissing(): void
-    {
-        $oldData = ['head_shortcut_icon' => 'favicon.png'];
-        $newData = ['head_shortcut_icon' => [
-            ['name' => 'favicon.png', 'url' => 'https://example.com/media/favicon.png']
-        ]];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result);
-    }
-
-    public function testCollectAdditionalDataDetectsReplacedImage(): void
-    {
-        $oldData = ['header_logo_src' => 'old-logo.png'];
-        $newData = ['header_logo_src' => [
-            ['file' => 'new-logo.png', 'name' => 'new-logo.png', 'size' => 99]
-        ]];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertArrayHasKey('design/header/logo_src', $result);
-        $this->assertSame('old-logo.png', $result['design/header/logo_src']['old_value']);
-        $this->assertSame('new-logo.png', $result['design/header/logo_src']['new_value']);
-    }
-
-    public function testCollectAdditionalDataDetectsClearedImage(): void
-    {
-        $oldData = ['header_logo_src' => 'logo.png'];
-        $newData = ['header_logo_src' => []];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertArrayHasKey('design/header/logo_src', $result);
-        $this->assertSame('logo.png', $result['design/header/logo_src']['old_value']);
-        $this->assertSame('', $result['design/header/logo_src']['new_value']);
-    }
-
-    public function testCollectAdditionalDataJoinsListOfScalars(): void
-    {
-        $oldData = ['watermark_image_size' => 'a,b'];
-        $newData = ['watermark_image_size' => ['a', 'b']];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertEmpty($result);
-    }
-
-    public function testCollectAdditionalDataEncodesAssociativeArray(): void
-    {
-        $oldData = ['header_logo_src' => 'logo.png'];
-        $newData = ['header_logo_src' => ['delete' => '1', 'value' => 'logo.png']];
-
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertArrayHasKey('design/header/logo_src', $result);
-        $this->assertSame(
-            '{"delete":"1","value":"logo.png"}',
-            $result['design/header/logo_src']['new_value']
-        );
+        $this->themeConfig = new ThemeConfig();
     }
 
     /**
-     * A hand-crafted POST can nest arrays arbitrarily deep. The cast must not
-     * raise "Array to string conversion": with swissup/module-ignition
-     * installed that warning becomes an ErrorException, SaveAfter aborts and
-     * the activity is never logged.
+     * Build a config value model as it reaches SaveAfter for an existing row
+     *
+     * Mirrors BackendModelFactory (stored row and field config in orig data,
+     * field name in field_config) and SaveBefore, which merges the section's
+     * config groups from SystemConfig::getOldData() into orig data.
+     *
+     * @param mixed $storedValue Value of the core_config_data row (may be NULL)
+     * @param mixed $newValue Value after the backend model's beforeSave()
      */
-    public function testCollectAdditionalDataHandlesNestedArrayInDescriptor(): void
-    {
-        $oldData = ['header_logo_src' => 'logo.png'];
-        $newData = ['header_logo_src' => [['file' => ['nested'], 'name' => ['nested']]]];
+    private function createValueModel(
+        string $path,
+        mixed $storedValue,
+        mixed $newValue,
+        string $scope = 'stores',
+        int $scopeId = 1,
+        ?string $fieldName = null
+    ): Value {
+        $fieldConfig = [
+            'path' => $path,
+            'field' => $fieldName ?? str_replace('/', '_', substr($path, strlen('design/'))),
+        ];
+        $storedRow = [
+            'config_id' => 42,
+            'scope' => $scope,
+            'scope_id' => $scopeId,
+            'path' => $path,
+            'value' => $storedValue,
+        ];
 
-        $warnings = [];
-        set_error_handler(
-            static function (int $errno, string $errstr) use (&$warnings): bool {
-                $warnings[] = $errstr;
-                return true;
-            },
-            E_WARNING | E_NOTICE
-        );
-
-        try {
-            $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-        } finally {
-            restore_error_handler();
+        $model = $this->getMockBuilder(Value::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods([])
+            ->getMock();
+        $model->setData(array_merge($storedRow, ['field_config' => $fieldConfig, 'value' => $newValue]));
+        foreach ($storedRow as $key => $value) {
+            $model->setOrigData($key, $value);
         }
+        $model->setOrigData('field_config', $fieldConfig);
+        $model->setOrigData('head', ['fields' => ['default_title' => ['value' => 'Other scope title']]]);
 
-        $this->assertSame([], $warnings, 'Flattening must not raise a PHP warning');
-        $this->assertArrayHasKey('design/header/logo_src', $result);
+        return $model;
+    }
+
+    // --- getEditData: happy path ---
+
+    public function testGetEditDataDetectsGenuineChange(): void
+    {
+        $model = $this->createValueModel('design/head/default_title', 'Old Title', 'New Title');
+
+        $result = $this->themeConfig->getEditData($model, []);
+
         $this->assertSame(
-            '{"file":["nested"],"name":["nested"]}',
-            $result['design/header/logo_src']['new_value']
+            ['design/head/default_title' => ['old_value' => 'Old Title', 'new_value' => 'New Title']],
+            $result
         );
     }
 
-    public function testCollectAdditionalDataUsesPlaceholderForUnserializableValue(): void
+    public function testGetEditDataIgnoresUnchangedField(): void
     {
-        $oldData = ['header_logo_src' => 'logo.png'];
-        $newData = ['header_logo_src' => ['broken' => "\xB1\x31"]];
+        $model = $this->createValueModel('design/head/default_title', 'Same', 'Same');
 
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
-
-        $this->assertArrayHasKey('design/header/logo_src', $result);
-        $this->assertSame('[unserializable]', $result['design/header/logo_src']['new_value']);
+        $this->assertSame([], $this->themeConfig->getEditData($model, []));
     }
 
-    public function testCollectAdditionalDataDoesNotEscapeSlashesInEncodedValue(): void
+    public function testGetEditDataSkipsFieldsInFieldArray(): void
     {
-        $oldData = [];
-        $newData = ['header_logo_src' => ['path' => 'stores/1/logo.png']];
+        $model = $this->createValueModel('design/head/includes', '<link/>', '<script/>');
 
-        $result = $this->themeConfig->collectAdditionalData($oldData, $newData, []);
+        $this->assertSame([], $this->themeConfig->getEditData($model, ['head_includes', 'scope']));
+    }
 
-        $this->assertSame(
-            '{"path":"stores/1/logo.png"}',
-            $result['design/header/logo_src']['new_value']
+    public function testGetEditDataSetsEditUrlIdFromModelScope(): void
+    {
+        $model = $this->createValueModel('design/head/default_title', 'Old', 'New', 'websites', 2);
+
+        $this->themeConfig->getEditData($model, []);
+
+        $this->assertSame('websites/scope_id/2', $model->getId());
+    }
+
+    // --- getEditData: image uploader fields ---
+
+    public function testGetEditDataLogsStoredPathOfReplacedImage(): void
+    {
+        // File::beforeSave() has already moved the upload and set the scoped path
+        $model = $this->createValueModel('design/header/logo_src', 'stores/1/old-logo.png', 'stores/1/new-logo.png');
+
+        $result = $this->themeConfig->getEditData($model, []);
+
+        $this->assertSame('stores/1/old-logo.png', $result['design/header/logo_src']['old_value']);
+        $this->assertSame('stores/1/new-logo.png', $result['design/header/logo_src']['new_value']);
+    }
+
+    public function testGetEditDataIgnoresUntouchedImage(): void
+    {
+        $model = $this->createValueModel('design/header/logo_src', 'stores/1/logo.png', 'stores/1/logo.png');
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, []));
+    }
+
+    // --- getEditData: edge/boundary cases ---
+
+    public function testGetEditDataIgnoresIntZeroVsStringZero(): void
+    {
+        $model = $this->createValueModel('design/footer/absolute_footer', 0, '0');
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, []));
+    }
+
+    public function testGetEditDataIgnoresNullRowRepostedAsEmptyString(): void
+    {
+        // Storage::load() turns NULL into '', so the form re-posts '' and the row is saved
+        $model = $this->createValueModel('design/footer/absolute_footer', null, '');
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, []));
+    }
+
+    public function testGetEditDataDetectsZeroToOneChange(): void
+    {
+        $model = $this->createValueModel('design/footer/absolute_footer', '0', '1');
+
+        $this->assertNotEmpty($this->themeConfig->getEditData($model, []));
+    }
+
+    public function testGetEditDataDetectsChangeFromNullRow(): void
+    {
+        $model = $this->createValueModel('design/header/welcome', null, 'Hello');
+
+        $result = $this->themeConfig->getEditData($model, []);
+
+        $this->assertSame(['old_value' => '', 'new_value' => 'Hello'], $result['design/header/welcome']);
+    }
+
+    public function testGetEditDataSkipsFieldByFormNameNotDerivableFromPath(): void
+    {
+        $model = $this->createValueModel(
+            'design/search_engine_robots/default_robots',
+            'INDEX,FOLLOW',
+            'NOINDEX,NOFOLLOW',
+            fieldName: 'default_robots'
         );
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, ['default_robots']));
+    }
+
+    public function testGetEditDataIgnoresConfigGroupsMergedIntoOrigData(): void
+    {
+        $model = $this->createValueModel('design/head/default_title', 'Stored title', 'Stored title');
+
+        $this->assertSame([], $this->themeConfig->getEditData($model, []));
+    }
+
+    public function testGetEditDataEncodesArrayValue(): void
+    {
+        $model = $this->createValueModel('design/pagination/list', 'a', ['path' => 'stores/1/a']);
+
+        $result = $this->themeConfig->getEditData($model, []);
+
+        $this->assertSame('{"path":"stores/1/a"}', $result['design/pagination/list']['new_value']);
+    }
+
+    public function testGetEditDataUsesPlaceholderForUnserializableValue(): void
+    {
+        $model = $this->createValueModel('design/pagination/list', 'a', ['broken' => "\xB1\x31"]);
+
+        $result = $this->themeConfig->getEditData($model, []);
+
+        $this->assertSame('[unserializable]', $result['design/pagination/list']['new_value']);
+    }
+
+    // --- getOldData ---
+
+    public function testGetOldDataReturnsStoredValueForModelPath(): void
+    {
+        $model = $this->createValueModel('design/head/default_title', 'Stored', 'New');
+
+        $this->assertSame(['design/head/default_title' => 'Stored'], $this->themeConfig->getOldData($model));
     }
 }
