@@ -16,6 +16,7 @@ namespace MageOS\AdminActivityLog\Observer;
 use Magento\Framework\Event\Observer;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
+use MageOS\AdminActivityLog\Model\Activity\ThemeConfig;
 use MageOS\AdminActivityLog\Model\Processor;
 use Psr\Log\LoggerInterface;
 
@@ -39,7 +40,9 @@ class SaveBefore extends AbstractActivityObserver
             $object->setCheckIfIsNew(false);
         }
 
-        if ($this->processor->validate($object)) {
+        if ($this->processor->validate($object)
+            && $this->processor->getEventConfig('module') !== ThemeConfig::MODULE_THEME_CONFIGURATION
+        ) {
             $data = $this->activityRepository->getOldData($object);
             if (!$data) {
                 return;

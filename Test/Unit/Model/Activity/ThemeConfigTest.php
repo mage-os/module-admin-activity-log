@@ -28,9 +28,8 @@ class ThemeConfigTest extends TestCase
     /**
      * Build a config value model as it reaches SaveAfter for an existing row
      *
-     * Mirrors BackendModelFactory (stored row and field config in orig data,
-     * field name in field_config) and SaveBefore, which merges the section's
-     * config groups from SystemConfig::getOldData() into orig data.
+     * Mirrors BackendModelFactory: stored row and field config in orig data,
+     * field name in field_config.
      *
      * @param mixed $storedValue Value of the core_config_data row (may be NULL)
      * @param mixed $newValue Value after the backend model's beforeSave()
@@ -64,7 +63,6 @@ class ThemeConfigTest extends TestCase
             $model->setOrigData($key, $value);
         }
         $model->setOrigData('field_config', $fieldConfig);
-        $model->setOrigData('head', ['fields' => ['default_title' => ['value' => 'Other scope title']]]);
 
         return $model;
     }
@@ -169,13 +167,6 @@ class ThemeConfigTest extends TestCase
         );
 
         $this->assertSame([], $this->themeConfig->getEditData($model, ['default_robots']));
-    }
-
-    public function testGetEditDataIgnoresConfigGroupsMergedIntoOrigData(): void
-    {
-        $model = $this->createValueModel('design/head/default_title', 'Stored title', 'Stored title');
-
-        $this->assertSame([], $this->themeConfig->getEditData($model, []));
     }
 
     public function testGetEditDataEncodesArrayValue(): void

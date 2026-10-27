@@ -19,17 +19,14 @@ use MageOS\AdminActivityLog\Api\Activity\ModelInterface;
 /**
  * Class ThemeConfig
  *
- * Content > Design > Configuration saves each field as its own config value
- * model. Magento\Theme\Model\Design\BackendModelFactory loads the stored row
- * for the saved scope into the model's orig data, and the field's backend
- * model has turned the posted value into the stored one (e.g. an image
- * uploader's file descriptor into its path) by the time SaveAfter runs, so
- * the model alone holds the old and new value for its path.
+ * Old and new values come from the per-field config value model.
  *
  * @package MageOS\AdminActivityLog\Model\Activity
  */
 class ThemeConfig implements ModelInterface
 {
+    public const MODULE_THEME_CONFIGURATION = 'theme_configuration';
+
     /**
      * Placeholder for values that cannot be JSON encoded
      */
@@ -77,10 +74,6 @@ class ThemeConfig implements ModelInterface
 
     /**
      * Get the design config form field name, as used in skip_fields
-     *
-     * Magento\Theme\Model\Data\Design\ConfigFactory stores it in the field
-     * config; it is not always derivable from the path (e.g. default_robots
-     * for design/search_engine_robots/default_robots).
      */
     private function getFieldName(DataObject $model, string $path): string
     {

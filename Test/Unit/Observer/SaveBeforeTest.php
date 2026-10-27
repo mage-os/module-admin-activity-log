@@ -17,6 +17,7 @@ use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Api\ActivityRepositoryInterface;
+use MageOS\AdminActivityLog\Model\Activity\ThemeConfig;
 use MageOS\AdminActivityLog\Model\Processor;
 use MageOS\AdminActivityLog\Observer\SaveBefore;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -145,6 +146,20 @@ class SaveBeforeTest extends TestCase
     {
         $object = $this->createObjectMock(10);
         $this->processor->method('validate')->willReturn(false);
+
+        $this->activityRepository->expects($this->never())
+            ->method('getOldData');
+
+        $this->subject->execute($this->createObserverWithObject($object));
+    }
+
+    public function testSkipsOrigDataForThemeConfiguration(): void
+    {
+        $object = $this->createObjectMock(10);
+        $this->processor->method('validate')->willReturn(true);
+        $this->processor->method('getEventConfig')
+            ->with('module')
+            ->willReturn(ThemeConfig::MODULE_THEME_CONFIGURATION);
 
         $this->activityRepository->expects($this->never())
             ->method('getOldData');
