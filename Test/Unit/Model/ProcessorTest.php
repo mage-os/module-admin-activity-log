@@ -554,6 +554,7 @@ class ProcessorTest extends TestCase
         string $parentClass,
         string $parentGetter
     ): void {
+        $this->skipUnlessClassesExist($commentClass, $parentClass);
         $this->initSalesOrderEvent();
 
         $parent = $this->getMockBuilder($parentClass)
@@ -583,6 +584,7 @@ class ProcessorTest extends TestCase
         string $parentClass,
         string $parentGetter
     ): void {
+        $this->skipUnlessClassesExist($commentClass);
         $this->initSalesOrderEvent();
 
         $comment = $this->getMockBuilder($commentClass)
@@ -662,6 +664,7 @@ class ProcessorTest extends TestCase
      */
     public function testGetEditUrlLinksCustomerToCustomerEditPage(string $module): void
     {
+        $this->skipUnlessClassesExist(Customer::class);
         $this->initEditUrlEvent($module);
 
         $customer = $this->getMockBuilder(Customer::class)
@@ -680,6 +683,7 @@ class ProcessorTest extends TestCase
      */
     public function testGetEditUrlLinksCustomerAddressToCustomerEditPage(string $module): void
     {
+        $this->skipUnlessClassesExist(CustomerAddress::class);
         $this->initEditUrlEvent($module);
 
         $address = $this->getMockBuilder(CustomerAddress::class)
@@ -700,6 +704,7 @@ class ProcessorTest extends TestCase
      */
     public function testGetEditUrlIsEmptyForCustomerWithoutId(string $module): void
     {
+        $this->skipUnlessClassesExist(Customer::class);
         $this->initEditUrlEvent($module);
 
         $customer = $this->getMockBuilder(Customer::class)
@@ -723,6 +728,18 @@ class ProcessorTest extends TestCase
                 'customer',
             ],
         ];
+    }
+
+    /**
+     * Magento_Sales and Magento_Customer are optional for this module, so skip tests that need them when absent
+     */
+    private function skipUnlessClassesExist(string ...$classNames): void
+    {
+        foreach ($classNames as $className) {
+            if (!class_exists($className)) {
+                $this->markTestSkipped($className . ' is not installed');
+            }
+        }
     }
 
     private function initSalesOrderEvent(): void
