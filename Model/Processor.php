@@ -15,6 +15,8 @@ namespace MageOS\AdminActivityLog\Model;
 
 use Exception;
 use Magento\Backend\Model\Auth\Session;
+use Magento\Customer\Model\Address as CustomerAddress;
+use Magento\Customer\Model\Customer;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Sales\Model\Order\Creditmemo\Comment as CreditmemoComment;
@@ -44,6 +46,7 @@ class Processor
     public const SALES_ORDER = 'sales_order';
     public const SAVE_ACTION = 'save';
     public const EDIT_ACTION = 'edit';
+    private const CUSTOMER_EDIT_URL = 'customer/index/edit/id/';
 
     protected string $actionName = '';
     protected string $lastAction = '';
@@ -128,6 +131,13 @@ class Processor
      */
     public function getEditUrl($model): string|array
     {
+        // Customers and their addresses link to the customer, whichever module logged them
+        if ($model instanceof Customer || $model instanceof CustomerAddress) {
+            $customerId = $model instanceof CustomerAddress ? $model->getCustomerId() : $model->getId();
+
+            return empty($customerId) ? '' : self::CUSTOMER_EDIT_URL . $customerId;
+        }
+
         $id = $model->getId();
         if ($this->eventConfig['module'] === self::SALES_ORDER) {
             $id = $this->getSalesOrderId($model);

@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Test\Unit\Model;
 
 use Magento\Backend\Model\Auth\Session;
+use Magento\Customer\Model\Address as CustomerAddress;
+use Magento\Customer\Model\Customer;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
@@ -655,31 +657,108 @@ class ProcessorTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider customerModuleDataProvider
+     */
+    public function testGetEditUrlLinksCustomerToCustomerEditPage(string $module): void
+    {
+        $this->initEditUrlEvent($module);
+
+        $customer = $this->getMockBuilder(Customer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $customer->method('getId')->willReturn('5');
+
+        $result = $this->processor->getEditUrl($customer);
+
+        $this->assertSame('customer/index/edit/id/5', $result);
+    }
+
+    /**
+     * @dataProvider customerModuleDataProvider
+     */
+    public function testGetEditUrlLinksCustomerAddressToCustomerEditPage(string $module): void
+    {
+        $this->initEditUrlEvent($module);
+
+        $address = $this->getMockBuilder(CustomerAddress::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId'])
+            ->getMock();
+        // parent_id of a customer address is the customer id
+        $address->method('getId')->willReturn('9');
+        $address->setData('parent_id', 5);
+
+        $result = $this->processor->getEditUrl($address);
+
+        $this->assertSame('customer/index/edit/id/5', $result);
+    }
+
+    /**
+     * @dataProvider customerModuleDataProvider
+     */
+    public function testGetEditUrlIsEmptyForCustomerWithoutId(string $module): void
+    {
+        $this->initEditUrlEvent($module);
+
+        $customer = $this->getMockBuilder(Customer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $customer->method('getId')->willReturn(null);
+
+        $result = $this->processor->getEditUrl($customer);
+
+        $this->assertSame('', $result);
+    }
+
+    public static function customerModuleDataProvider(): array
+    {
+        return [
+            'sales order' => [
+                Processor::SALES_ORDER,
+            ],
+            'customer' => [
+                'customer',
+            ],
+        ];
+    }
+
     private function initSalesOrderEvent(): void
+    {
+        $this->initEditUrlEvent(Processor::SALES_ORDER);
+    }
+
+    private function initEditUrlEvent(string $module): void
     {
         $this->config
             ->method('getEventByAction')
-            ->with('sales_order_invoice_save')
+            ->with('test_action_save')
             ->willReturn([
-                'module' => Processor::SALES_ORDER,
+                'module' => $module,
                 'action' => 'save',
             ]);
 
         $this->config
             ->method('getActivityModuleEditUrl')
-            ->with(Processor::SALES_ORDER)
-            ->willReturn('{{module}}/order/view/order_id/{{id}}');
+            ->with($module)
+            ->willReturn(
+                $module === Processor::SALES_ORDER
+                    ? '{{module}}/order/view/order_id/{{id}}'
+                    : '{{module}}/{{controller}}/edit/id/{{id}}'
+            );
 
         $mockRequest = $this->createMock(\Magento\Framework\App\Request\Http::class);
         $mockRequest->method('getRouteName')->willReturn('sales');
-        $mockRequest->method('getControllerName')->willReturn('order_invoice');
+        $mockRequest->method('getControllerName')->willReturn('order_create');
         $mockRequest->method('getActionName')->willReturn('save');
 
         $this->handler
             ->method('getRequest')
             ->willReturn($mockRequest);
 
-        $this->processor->init('sales_order_invoice_save', 'save');
+        $this->processor->init('test_action_save', 'save');
     }
 
     public function testGetStoreIdFallsBackToStoreManagerWhenStoreIdIsEmptyArray(): void
