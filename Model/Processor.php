@@ -15,8 +15,13 @@ namespace MageOS\AdminActivityLog\Model;
 
 use Exception;
 use Magento\Backend\Model\Auth\Session;
+use Magento\Customer\Model\Address as CustomerAddress;
+use Magento\Customer\Model\Customer;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Sales\Model\Order\Creditmemo\Comment as CreditmemoComment;
+use Magento\Sales\Model\Order\Invoice\Comment as InvoiceComment;
+use Magento\Sales\Model\Order\Shipment\Comment as ShipmentComment;
 use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
 use MageOS\AdminActivityLog\Model\Activity\SystemConfig;
@@ -41,6 +46,7 @@ class Processor
     public const SALES_ORDER = 'sales_order';
     public const SAVE_ACTION = 'save';
     public const EDIT_ACTION = 'edit';
+    private const CUSTOMER_EDIT_URL = 'customer/index/edit/id/';
 
     protected string $actionName = '';
     protected string $lastAction = '';
@@ -125,10 +131,19 @@ class Processor
      */
     public function getEditUrl($model): string|array
     {
+        // Customers and their addresses link to the customer, whichever module logged them
+        if ($model instanceof Customer || $model instanceof CustomerAddress) {
+            $customerId = $model instanceof CustomerAddress ? $model->getCustomerId() : $model->getId();
+
+            return empty($customerId) ? '' : self::CUSTOMER_EDIT_URL . $customerId;
+        }
+
         $id = $model->getId();
-        if ($this->eventConfig['module'] === self::SALES_ORDER && (!empty($model->getOrderId())
-                || !empty($model->getParentId()))) {
-            $id = $model->getOrderId() ?: $model->getParentId();
+        if ($this->eventConfig['module'] === self::SALES_ORDER) {
+            $id = $this->getSalesOrderId($model);
+            if (empty($id)) {
+                return '';
+            }
         }
         if ($this->eventConfig['module'] === SystemConfig::MODULE_SYSTEM_CONFIGURATION) {
             $path = $model->getData('field_config')['path'] ?? '';
@@ -147,6 +162,26 @@ class Processor
             ],
             $this->config->getActivityModuleEditUrl($this->eventConfig['module'])
         );
+    }
+
+    /**
+     * Get the id of the order a sales_order activity item belongs to
+     * @param $model
+     */
+    private function getSalesOrderId($model): mixed
+    {
+        // Comment parent_id is the invoice/shipment/credit memo id, not the order id
+        $parent = match (true) {
+            $model instanceof InvoiceComment => $model->getInvoice(),
+            $model instanceof ShipmentComment => $model->getShipment(),
+            $model instanceof CreditmemoComment => $model->getCreditmemo(),
+            default => false,
+        };
+        if ($parent !== false) {
+            return $parent?->getOrderId();
+        }
+
+        return $model->getOrderId() ?: $model->getParentId() ?: $model->getId();
     }
 
     /**

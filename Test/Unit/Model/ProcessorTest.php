@@ -14,9 +14,17 @@ declare(strict_types=1);
 namespace MageOS\AdminActivityLog\Test\Unit\Model;
 
 use Magento\Backend\Model\Auth\Session;
+use Magento\Customer\Model\Address as CustomerAddress;
+use Magento\Customer\Model\Customer;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Sales\Model\Order\Creditmemo;
+use Magento\Sales\Model\Order\Creditmemo\Comment as CreditmemoComment;
+use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Invoice\Comment as InvoiceComment;
+use Magento\Sales\Model\Order\Shipment;
+use Magento\Sales\Model\Order\Shipment\Comment as ShipmentComment;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use MageOS\AdminActivityLog\Api\ActivityConfigInterface;
@@ -536,6 +544,238 @@ class ProcessorTest extends TestCase
         $result = $this->processor->getEditUrl($model);
 
         $this->assertSame('adminhtml/system_config/edit/section/catalog', $result);
+    }
+
+    /**
+     * @dataProvider salesCommentDataProvider
+     */
+    public function testGetEditUrlLinksSalesCommentToOrderOfParentDocument(
+        string $commentClass,
+        string $parentClass,
+        string $parentGetter
+    ): void {
+        $this->skipUnlessClassesExist($commentClass, $parentClass);
+        $this->initSalesOrderEvent();
+
+        $parent = $this->getMockBuilder($parentClass)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getOrderId'])
+            ->getMock();
+        $parent->method('getOrderId')->willReturn('91740');
+
+        $comment = $this->getMockBuilder($commentClass)
+            ->disableOriginalConstructor()
+            ->onlyMethods([$parentGetter])
+            ->getMock();
+        $comment->method($parentGetter)->willReturn($parent);
+        // parent_id of a comment is the invoice/shipment/credit memo id
+        $comment->setData(['entity_id' => 28921, 'parent_id' => 66422]);
+
+        $result = $this->processor->getEditUrl($comment);
+
+        $this->assertSame('sales/order/view/order_id/91740', $result);
+    }
+
+    /**
+     * @dataProvider salesCommentDataProvider
+     */
+    public function testGetEditUrlIsEmptyForSalesCommentWithoutParentDocument(
+        string $commentClass,
+        string $parentClass,
+        string $parentGetter
+    ): void {
+        $this->skipUnlessClassesExist($commentClass);
+        $this->initSalesOrderEvent();
+
+        $comment = $this->getMockBuilder($commentClass)
+            ->disableOriginalConstructor()
+            ->onlyMethods([$parentGetter])
+            ->getMock();
+        $comment->method($parentGetter)->willReturn(null);
+        $comment->setData(['entity_id' => 28921, 'parent_id' => 66422]);
+
+        $result = $this->processor->getEditUrl($comment);
+
+        $this->assertSame('', $result);
+    }
+
+    public static function salesCommentDataProvider(): array
+    {
+        return [
+            'invoice comment' => [
+                InvoiceComment::class,
+                Invoice::class,
+                'getInvoice',
+            ],
+            'shipment comment' => [
+                ShipmentComment::class,
+                Shipment::class,
+                'getShipment',
+            ],
+            'credit memo comment' => [
+                CreditmemoComment::class,
+                Creditmemo::class,
+                'getCreditmemo',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider salesOrderModelDataProvider
+     */
+    public function testGetEditUrlResolvesOrderIdOfSalesOrderModels(array $data, string $expected): void
+    {
+        $this->initSalesOrderEvent();
+
+        $result = $this->processor->getEditUrl(new DataObject($data));
+
+        $this->assertSame($expected, $result);
+    }
+
+    public static function salesOrderModelDataProvider(): array
+    {
+        return [
+            'order' => [
+                [
+                    'id' => 91740,
+                ],
+                'sales/order/view/order_id/91740',
+            ],
+            'invoice or shipment track' => [
+                [
+                    'id' => 66422,
+                    'order_id' => 91740,
+                    'parent_id' => 5,
+                ],
+                'sales/order/view/order_id/91740',
+            ],
+            'order address or status history' => [
+                [
+                    'id' => 12,
+                    'parent_id' => 91740,
+                ],
+                'sales/order/view/order_id/91740',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider customerModuleDataProvider
+     */
+    public function testGetEditUrlLinksCustomerToCustomerEditPage(string $module): void
+    {
+        $this->skipUnlessClassesExist(Customer::class);
+        $this->initEditUrlEvent($module);
+
+        $customer = $this->getMockBuilder(Customer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $customer->method('getId')->willReturn('5');
+
+        $result = $this->processor->getEditUrl($customer);
+
+        $this->assertSame('customer/index/edit/id/5', $result);
+    }
+
+    /**
+     * @dataProvider customerModuleDataProvider
+     */
+    public function testGetEditUrlLinksCustomerAddressToCustomerEditPage(string $module): void
+    {
+        $this->skipUnlessClassesExist(CustomerAddress::class);
+        $this->initEditUrlEvent($module);
+
+        $address = $this->getMockBuilder(CustomerAddress::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId'])
+            ->getMock();
+        // parent_id of a customer address is the customer id
+        $address->method('getId')->willReturn('9');
+        $address->setData('parent_id', 5);
+
+        $result = $this->processor->getEditUrl($address);
+
+        $this->assertSame('customer/index/edit/id/5', $result);
+    }
+
+    /**
+     * @dataProvider customerModuleDataProvider
+     */
+    public function testGetEditUrlIsEmptyForCustomerWithoutId(string $module): void
+    {
+        $this->skipUnlessClassesExist(Customer::class);
+        $this->initEditUrlEvent($module);
+
+        $customer = $this->getMockBuilder(Customer::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $customer->method('getId')->willReturn(null);
+
+        $result = $this->processor->getEditUrl($customer);
+
+        $this->assertSame('', $result);
+    }
+
+    public static function customerModuleDataProvider(): array
+    {
+        return [
+            'sales order' => [
+                Processor::SALES_ORDER,
+            ],
+            'customer' => [
+                'customer',
+            ],
+        ];
+    }
+
+    /**
+     * Magento_Sales and Magento_Customer are optional for this module, so skip tests that need them when absent
+     */
+    private function skipUnlessClassesExist(string ...$classNames): void
+    {
+        foreach ($classNames as $className) {
+            if (!class_exists($className)) {
+                $this->markTestSkipped($className . ' is not installed');
+            }
+        }
+    }
+
+    private function initSalesOrderEvent(): void
+    {
+        $this->initEditUrlEvent(Processor::SALES_ORDER);
+    }
+
+    private function initEditUrlEvent(string $module): void
+    {
+        $this->config
+            ->method('getEventByAction')
+            ->with('test_action_save')
+            ->willReturn([
+                'module' => $module,
+                'action' => 'save',
+            ]);
+
+        $this->config
+            ->method('getActivityModuleEditUrl')
+            ->with($module)
+            ->willReturn(
+                $module === Processor::SALES_ORDER
+                    ? '{{module}}/order/view/order_id/{{id}}'
+                    : '{{module}}/{{controller}}/edit/id/{{id}}'
+            );
+
+        $mockRequest = $this->createMock(\Magento\Framework\App\Request\Http::class);
+        $mockRequest->method('getRouteName')->willReturn('sales');
+        $mockRequest->method('getControllerName')->willReturn('order_create');
+        $mockRequest->method('getActionName')->willReturn('save');
+
+        $this->handler
+            ->method('getRequest')
+            ->willReturn($mockRequest);
+
+        $this->processor->init('test_action_save', 'save');
     }
 
     public function testGetStoreIdFallsBackToStoreManagerWhenStoreIdIsEmptyArray(): void
